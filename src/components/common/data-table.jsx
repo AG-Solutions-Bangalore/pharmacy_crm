@@ -37,8 +37,7 @@ const DataTable = ({
   columns = [],
   pageSize = 10,
   searchPlaceholder = "Search...",
-  addButton,
-  actions = [],
+  toolbarRight,
 }) => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
@@ -110,59 +109,10 @@ const DataTable = ({
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <div className="flex items-center gap-2">
-            {/* Single Add Button */}
-            {addButton &&
-              (addButton.to ? (
-                <Link to={addButton.to}>
-                  <Button variant="default" className="h-9">
-                    {(addButton.icon || SquarePlus) &&
-                      (() => {
-                        const Icon = addButton.icon || SquarePlus;
-                        return <Icon className="h-3 w-3 mr-2" />;
-                      })()}
-                    {addButton.label}
-                  </Button>
-                </Link>
-              ) : (
-                <Button
-                  variant="default"
-                  className="h-9"
-                  onClick={addButton.onClick}
-                >
-                  {(() => {
-                    const Icon = addButton.icon || SquarePlus;
-                    return <Icon className="h-3 w-3 mr-2" />;
-                  })()}
-                  {addButton.label}
-                </Button>
-              ))}
-
-            {actions.map((action, index) => {
-              const Icon = action.icon || SquarePlus;
-
-              return action.to ? (
-                <Link key={index} to={action.to}>
-                  <Button variant={action.variant || "default"} className="h-9">
-                    <Icon className="h-3 w-3 mr-2" />
-                    {action.label}
-                  </Button>
-                </Link>
-              ) : (
-                <Button
-                  key={index}
-                  variant={action.variant || "default"}
-                  className="h-9"
-                  onClick={action.onClick}
-                >
-                  <Icon className="h-3 w-3 mr-2" />
-                  {action.label}
-                </Button>
-              );
-            })}
-          </div>
         </div>
+        {toolbarRight && (
+          <div className="flex items-center gap-2">{toolbarRight}</div>
+        )}
       </div>
 
       <div className="rounded-none border min-h-[31rem] grid grid-cols-1">

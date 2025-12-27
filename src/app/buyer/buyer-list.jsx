@@ -8,6 +8,10 @@ import { Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import BuyerForm from "./buyer-form";
+import {
+  BuyerCreate,
+  EditBuyer,
+} from "@/components/buttoncontrol/button-component";
 
 const BuyerList = () => {
   const {
@@ -58,16 +62,12 @@ const BuyerList = () => {
       header: "Actions",
       cell: ({ row }) => (
         <div>
-          <Button
-            size="icon"
-            variant="outline"
+          <EditBuyer
             onClick={() => {
               setEdit(row.original?.id);
               setOpen(true);
             }}
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
+          />
         </div>
       ),
     },
@@ -86,10 +86,11 @@ const BuyerList = () => {
         columns={columns}
         pageSize={10}
         searchPlaceholder="Search buyer..."
-        addButton={{
-          onClick: handleCreate,
-          label: "Add Company",
-        }}
+        toolbarRight={
+          <>
+            <BuyerCreate onClick={handleCreate} className="ml-2" />
+          </>
+        }
       />
       {open && <BuyerForm open={open} setOpen={setOpen} editId={editId} />}
     </>

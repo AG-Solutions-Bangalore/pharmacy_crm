@@ -78,16 +78,25 @@ const UserManagementList = () => {
         columns={columns}
         pageSize={10}
         searchPlaceholder="Search team..."
-        addButton={{
-          to: "/page-management",
-          label: "Page",
-        }}
-        actions={[
-          {
-            label: "Button",
-            onClick: () => navigate("/button-management"),
-          },
-        ]}
+        toolbarRight={
+          <>
+            <Button
+              variant="default"
+              onClick={() => navigate("/page-management")}
+              className="ml-2"
+            >
+              Page
+            </Button>
+
+            <Button
+              key="button-management"
+              variant="default"
+              onClick={() => navigate("/button-management")}
+            >
+              Button
+            </Button>
+          </>
+        }
       />
     </>
   );

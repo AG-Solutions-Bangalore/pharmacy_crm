@@ -9,14 +9,6 @@ export const sidebarData = {
   projects: [
     { name: "Dashboard", url: "/home" },
     { name: "Buyer", url: "/buyer" },
-    // { name: "Contract", url: "/contract" },
-    // { name: "Invoice", url: "/invoice" },
-    // { name: "Purchase Order", url: "/purchase-order" },
-    // { name: "Costing", url: "/costing" },
-    // { name: "Folder", url: "/folder" },
-    // { name: "Cost Field", url: "/product-costing" },
-    // { name: "Cost Parameter", url: "/costing-parameter" },
-    // { name: "Cost Calculator", url: "/cost-calculator" },
   ],
   userManagement: [
     { name: "User Management", url: "/userManagement" },

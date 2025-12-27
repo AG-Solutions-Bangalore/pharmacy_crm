@@ -13,19 +13,11 @@ import { useSelector } from "react-redux";
 
 import {
   AudioWaveform,
-  BookOpen,
-  Building2,
   Command,
   Frame,
   GalleryVerticalEnd,
-  Globe,
-  HelpCircle,
-  Image,
-  LayoutGrid,
-  Mail,
   Settings,
   Users,
-  Youtube,
 } from "lucide-react";
 
 const NAVIGATION_CONFIG = [
@@ -35,10 +27,18 @@ const NAVIGATION_CONFIG = [
     icon: Frame,
   },
   {
-    title: "Buyer",
-    url: "/buyer",
-    icon: Frame,
+    title: "Master",
+    url: "#",
+    icon: Settings,
+    items: [
+      {
+        title: "Buyer",
+        url: "/buyer",
+        icon: Users,
+      },
+    ],
   },
+
   {
     title: "User Management",
     url: "/userManagement",
@@ -51,25 +51,36 @@ const NAVIGATION_CONFIG = [
   },
 ];
 
-/* =========================
-   API PERMISSION CHECK
-========================= */
-
 const isAllowedByAPI = (item, pagePermissions, userId) => {
-  if (!item?.url) return false;
+  if (!item?.url || item.url === "#") return true;
 
   const cleanUrl = item.url.replace(/^\//, "");
+
   return pagePermissions.some(
-    (permission) =>
-      permission.page == item.title &&
-      permission.url == cleanUrl &&
-      permission.userIds?.includes(String(userId)) &&
-      permission.status == "Active"
+    (p) =>
+      p.page === item.title &&
+      p.url === cleanUrl &&
+      p.userIds?.includes(String(userId)) &&
+      p.status === "Active"
   );
 };
 
 const filterSidebarByAPI = (items, pagePermissions, userId) => {
-  return items.filter((item) => isAllowedByAPI(item, pagePermissions, userId));
+  if (!Array.isArray(items)) return [];
+
+  return items.reduce((acc, item) => {
+    if (item.items?.length) {
+      const children = filterSidebarByAPI(item.items, pagePermissions, userId);
+
+      if (children.length > 0) {
+        acc.push({ ...item, items: children });
+      }
+    } else if (isAllowedByAPI(item, pagePermissions, userId)) {
+      acc.push(item);
+    }
+
+    return acc;
+  }, []);
 };
 
 /* =========================
