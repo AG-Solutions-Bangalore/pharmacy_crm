@@ -1,6 +1,9 @@
 export const LOGOUT = {
   logout: "/panel-logout",
 };
+export const FORGOTPASSWORD = {
+  sendPasswordReset: "/panel-send-password",
+};
 export const LOGIN = {
   postLogin: "/panel-login",
 };

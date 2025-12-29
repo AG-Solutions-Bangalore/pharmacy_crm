@@ -2,38 +2,50 @@ import { LOGIN } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { setCredentials } from "@/store/auth/authSlice";
 import { setCompanyDetails } from "@/store/auth/companySlice";
-import { motion } from "framer-motion";
-import { useState, useRef, useEffect, useContext } from "react";
-import { useDispatch } from "react-redux";
-import LoginForm from "./login-form";
-import Carousel from "./carousel";
-import BackgroundSVG from "./background-svg";
-import { toast } from "sonner";
-import { ContextPanel } from "@/lib/context-panel";
-import { useNavigate } from "react-router-dom";
 import { setUsers } from "@/store/user/userSlice";
+import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { useDispatch } from "react-redux";
+import { toast } from "sonner";
+import BackgroundSVG from "./background-svg";
+import Carousel from "./carousel";
+import LoginForm from "./login-form";
 
 const testimonials = [
   {
     image:
-      "https://images.unsplash.com/photo-1588776814546-8b8f7d1027f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", // pharmacist with medicines
+      "https://img.freepik.com/free-photo/young-hispanic-woman-pharmacist-smiling-confident-standing-with-arms-crossed-gesture-pharmacy_839833-7087.jpg?w=740",
     title: "Expert Pharmacists",
     description:
       "Our team of certified pharmacists ensures accurate dispensing and professional healthcare guidance.",
   },
   {
     image:
-      "https://images.unsplash.com/photo-1580281657524-1b6d0b5e7c3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", // pharmacy shelves
+      "https://img.freepik.com/free-photo/warehouse-pharmacy_1161-231.jpg?w=740",
     title: "Wide Range of Medications",
     description:
       "We provide an extensive selection of prescription and over-the-counter medicines for all your health needs.",
   },
   {
     image:
-      "https://images.unsplash.com/photo-1576765607927-01c46f69d3c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", // patient consultation
+      "https://img.freepik.com/free-vector/tiny-pharmacist-with-pills-vitamins-flat-vector-illustration-doctors-writing-prescriptions-antibiotics-working-together-helping-patients-cure-pharmacy-business-drugstore-concept_74855-23225.jpg?w=740",
     title: "Patient Care & Consultation",
     description:
       "Personalized advice and care for every patient, ensuring safety, proper dosage, and overall well-being.",
+  },
+  {
+    image:
+      "https://img.freepik.com/premium-photo/doctor-holding-medicine-capsule-pack-computer-tablet-filling-prescription-pharmacy-drugstore_67340-424.jpg?w=740",
+    title: "Digital Prescription Management",
+    description:
+      "Efficient digital prescription handling ensures accuracy, faster processing, and improved patient safety.",
+  },
+  {
+    image:
+      "https://img.freepik.com/premium-photo/clean-organized-pharmacy-interior-with-stocked-shelves_1284935-1894.jpg?w=740",
+    title: "Modern & Organized Pharmacy",
+    description:
+      "A clean, well-organized pharmacy environment ensuring easy access to medicines and a better customer experience.",
   },
 ];
 

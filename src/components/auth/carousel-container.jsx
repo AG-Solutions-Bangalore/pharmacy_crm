@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 
 export default function CarouselContainer({
   testimonials,
-  testimonialIndex,
   getCarouselRotation,
   handleCarouselChange,
 }) {
@@ -17,7 +16,6 @@ export default function CarouselContainer({
           const isCenter = position === 0;
           const isLeft = position === -1;
           const isRight = position === 1;
-
           return (
             <motion.div
               key={index}

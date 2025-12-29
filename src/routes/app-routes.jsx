@@ -11,6 +11,9 @@ import GrCodeList from "@/app/grcode/grcode-list";
 import Home from "@/app/home/home";
 import MarkingList from "@/app/marking/marking-list";
 import OrderTypeList from "@/app/ordertype/ordertype-list";
+import PaymentTermList from "@/app/payementterm/paymentterm-list";
+import PortofList from "@/app/portofloading/portofloading-list";
+import PreRecepitList from "@/app/prereceipts/prereceipts-list";
 import Settings from "@/app/setting/setting";
 import CreateButton from "@/app/usermanagement/usermanagement-create-button";
 import CreatePage from "@/app/usermanagement/usermanagement-create-page";
@@ -20,14 +23,12 @@ import EditUserType from "@/app/usertype/usertype-edit";
 import UserTypeList from "@/app/usertype/usertype-list";
 import Maintenance from "@/components/common/maintenance";
 import ErrorBoundary from "@/components/error-boundry/error-boundry";
+import ForgotPasswordForm from "@/components/forgot-password/forgot-password";
 import LoadingBar from "@/components/loader/loading-bar";
 import { Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import AuthRoute from "./auth-route";
 import ProtectedRoute from "./protected-route";
-import PaymentTermList from "@/app/payementterm/paymentterm-list";
-import PortofList from "@/app/portofloading/portofloading-list";
-import PreRecepitList from "@/app/prereceipts/prereceipts-list";
 
 function AppRoutes() {
   return (
@@ -35,14 +36,14 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<AuthRoute />}>
           <Route path="/" element={<Login />} />
-          {/* <Route
+          <Route
             path="/forgot-password"
             element={
               <Suspense fallback={<LoadingBar />}>
-                <ForgotPassword />
+                <ForgotPasswordForm />
               </Suspense>
             }
-          /> */}
+          />
           <Route path="/maintenance" element={<Maintenance />} />
         </Route>
 
