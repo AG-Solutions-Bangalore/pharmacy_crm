@@ -1,7 +1,8 @@
 // apiClient.js
 import BASE_URL from "@/config/base-url";
 import { store } from "@/store/store";
-import useAppLogout from "@/utils/logout";
+import { logout } from "@/store/auth/authSlice";
+import { persistor } from "@/store/store";
 import axios from "axios";
 
 const apiClient = axios.create({
@@ -26,11 +27,19 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const status = error?.response?.status;
 
     if (status === 401) {
-      useAppLogout();
+      console.log("401 detected → force logout");
+
+      localStorage.clear();
+
+      store.dispatch(logout());
+
+      await persistor.flush();
+      await persistor.purge();
+
       window.location.replace("/");
     }
 
