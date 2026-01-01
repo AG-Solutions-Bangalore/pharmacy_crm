@@ -40,6 +40,8 @@ import ItemList from "@/app/item/item-list";
 import PrecarriageList from "@/app/precarriages/precarriages-list";
 import VendorForm from "@/app/vendor/vendor-form";
 import VendorList from "@/app/vendor/vendor-list";
+import PurchaseList from "@/app/purchase/purchase-list";
+import PurchaseForm from "@/app/purchase/purchase-form";
 
 function AppRoutes() {
   return (
@@ -283,7 +285,63 @@ function AppRoutes() {
               </Suspense>
             }
           />
+          <Route
+            path="/master/precarriage"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <PreRecepitList />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/master/vendor"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <VendorList />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/master/vendor/create"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <VendorForm />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/master/vendor/edit/:id"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <VendorForm />
+              </Suspense>
+            }
+          />
 
+          <Route
+            path="/master/purchase"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <PurchaseList />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/master/purchase/create"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <PurchaseForm />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/master/purchase/edit/:id"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <PurchaseForm />
+              </Suspense>
+            }
+          />
         </Route>
 
         <Route path="*" element={<NotFound />} />

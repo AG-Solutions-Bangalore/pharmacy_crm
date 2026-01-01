@@ -154,6 +154,7 @@ export const VESSEL_API = {
 export const BRANCH_API = {
   getlist: "/panel-fetch-branch-list",
   create: "/panel-create-branch",
+  active: "/panel-fetch-branch",
   getById: (id) => `/panel-fetch-branch-by-id/${id}`,
   updateById: (id) => `/panel-update-branch/${id}`,
 };
@@ -191,8 +192,8 @@ export const VENDOR_API = {
 export const PURCHASE_API = {
   getlist: "/purchase",
   create: "/purchase",
-  active: "/activePurchase",
   getById: (id) => `/purchase/${id}`,
   updateById: (id) => `/purchase/${id}`,
   updateStatus: (id) => `/purchases/${id}/status`,
+  deleteSubs: (id) => `/deletepurchaseSub/${id}`,
 };

@@ -1,10 +1,13 @@
 import {
+  BRANCH_API,
   COUNTRY_API,
   COUNTRYPORT_API,
+  ITEMS_API,
   PORT_API,
   PRERECEIPTS_API,
   SCHEME_API,
   STATE_API,
+  VENDOR_API,
 } from "@/constants/apiConstants";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 
@@ -18,6 +21,18 @@ const MASTER_APIS = {
     url: COUNTRYPORT_API.active,
     queryKey: ["countryport-active"],
   },
+  item: {
+    url: ITEMS_API.active,
+    queryKey: ["item-active"],
+  },
+  branch: {
+    url: BRANCH_API.active,
+    queryKey: ["branch-active"],
+  },
+  vendor: {
+    url: VENDOR_API.active,
+    queryKey: ["vendor-active"],
+  },
 };
 
 const useMasterQueries = (keys = Object.keys(MASTER_APIS), enabled = true) => {
@@ -28,7 +43,7 @@ const useMasterQueries = (keys = Object.keys(MASTER_APIS), enabled = true) => {
     const query = useGetApiMutation({
       url,
       queryKey,
-      options: { enabled }, 
+      options: { enabled },
     });
     result[key] = query;
   });

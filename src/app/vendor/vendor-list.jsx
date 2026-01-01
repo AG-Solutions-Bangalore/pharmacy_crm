@@ -40,7 +40,9 @@ const VendorList = () => {
     { header: "Vendor Alias", accessorKey: "vendor_alias" },
     { header: "Short Name", accessorKey: "vendor_short" },
     { header: "Name", accessorKey: "vendor_name" },
-    { header: "City", accessorKey: "vendor_city" },
+    { header: "GST", accessorKey: "vendor_gst_no" },
+    { header: "Contact Person", accessorKey: "vendor_contact_person" },
+    { header: "Mobile No", accessorKey: "vendor_mobile1" },
     { header: "State", accessorKey: "vendor_state" },
     {
       header: "Status",
@@ -48,7 +50,7 @@ const VendorList = () => {
       cell: ({ row }) => (
         <ToggleStatus
           initialStatus={row.original.vendor_status}
-          apiUrl={BAG_API.updateStatus(row.original.id)}
+          apiUrl={VENDOR_API.updateStatus(row.original.id)}
           payloadKey="vendor_status"
           onSuccess={refetch}
         />
@@ -65,12 +67,12 @@ const VendorList = () => {
   ];
 
   if (isError) return <ApiErrorPage onRetry={refetch} />;
-
+  console.log(apiData?.data);
   return (
     <>
       {isLoading && <LoadingBar />}
       <DataTable
-        data={apiData?.data || []}
+        data={apiData?.data?.data || []}
         columns={columns}
         pageSize={pageSize}
         searchPlaceholder="Search vendor..."

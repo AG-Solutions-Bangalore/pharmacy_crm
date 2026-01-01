@@ -1,12 +1,10 @@
+// PurchaseList.jsx
 import ApiErrorPage from "@/components/api-error/api-error";
 import {
-    PurchaseCreate,
+  PurchaseCreate,
   PurchaseEdit,
-  VendorCreate,
-  VendorEdit,
 } from "@/components/buttoncontrol/button-component";
 import DataTable from "@/components/common/data-table";
-import ToggleStatus from "@/components/common/status-toggle";
 import LoadingBar from "@/components/loader/loading-bar";
 import { PURCHASE_API } from "@/constants/apiConstants";
 import useDebounce from "@/hooks/useDebounce";
@@ -35,27 +33,14 @@ const PurchaseList = () => {
     queryKey: ["purchase-list", pageIndex, debouncedSearch],
     params,
   });
-
   const apiData = data;
 
   const columns = [
-    { header: "Vendor Alias", accessorKey: "vendor_alias" },
-    { header: "Short Name", accessorKey: "vendor_short" },
-    { header: "Name", accessorKey: "vendor_name" },
-    { header: "City", accessorKey: "vendor_city" },
-    { header: "State", accessorKey: "vendor_state" },
-    {
-      header: "Status",
-      accessorKey: "vendor_status",
-      cell: ({ row }) => (
-        <ToggleStatus
-          initialStatus={row.original.vendor_status}
-          apiUrl={BAG_API.updateStatus(row.original.id)}
-          payloadKey="vendor_status"
-          onSuccess={refetch}
-        />
-      ),
-    },
+    { header: "Branch", accessorKey: "branch_short" },
+    { header: "Vendor", accessorKey: "vendor_name" },
+    { header: "Bill Ref", accessorKey: "purchase_bill_ref" },
+    { header: "Date", accessorKey: "purchase_date" },
+    { header: "Status", accessorKey: "purchase_status" },
     {
       header: "Actions",
       cell: ({ row }) => (
@@ -72,15 +57,12 @@ const PurchaseList = () => {
     <>
       {isLoading && <LoadingBar />}
       <DataTable
-        data={apiData?.data || []}
+        data={apiData?.data?.data || []}
         columns={columns}
         pageSize={pageSize}
         searchPlaceholder="Search purchase..."
         toolbarRight={
-          <PurchaseCreate
-            onClick={() => navigate("/master/purchase/create")}
-            className="ml-2"
-          />
+          <PurchaseCreate onClick={() => navigate("/master/purchase/create")} />
         }
         serverPagination={{
           pageIndex,

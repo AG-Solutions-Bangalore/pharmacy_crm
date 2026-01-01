@@ -1019,4 +1019,6 @@ export default {
   PrecarriageEdit,
   VendorCreate,
   VendorEdit,
+  PurchaseCreate,
+  PurchaseEdit,
 };

@@ -131,6 +131,11 @@ const NAVIGATION_CONFIG = [
         url: "/master/vendor",
         icon: Users,
       },
+      {
+        title: "Purchase",
+        url: "/master/purchase",
+        icon: Users,
+      },
     ],
   },
 
