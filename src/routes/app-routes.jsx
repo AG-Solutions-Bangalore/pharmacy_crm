@@ -44,6 +44,8 @@ import PurchaseList from "@/app/purchase/purchase-list";
 import PurchaseForm from "@/app/purchase/purchase-form";
 import ContractList from "@/app/contract/contract-list";
 import ContractForm from "@/app/contract/contract-form";
+import InvoiceList from "@/app/invoice/invoice-list";
+import InvoiceForm from "@/app/invoice/invoice-form";
 
 function AppRoutes() {
   return (
@@ -360,14 +362,38 @@ function AppRoutes() {
               </Suspense>
             }
           />
-          {/* <Route
+          <Route
             path="/contract/edit/:id"
             element={
               <Suspense fallback={<LoadingBar />}>
                 <ContractForm />
               </Suspense>
             }
-          /> */}
+          />
+          <Route
+            path="/invoice"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <InvoiceList />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/invoice/create"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <InvoiceForm />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/invoice/edit/:id"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <InvoiceForm />
+              </Suspense>
+            }
+          />
         </Route>
 
         <Route path="*" element={<NotFound />} />

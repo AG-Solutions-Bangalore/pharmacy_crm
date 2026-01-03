@@ -57,6 +57,7 @@ export const BAG_API = {
 export const BANK_API = {
   getlist: "/bank",
   create: "/bank",
+  active: "/activeBanks",
   getById: (id) => `/bank/${id}`,
   updateById: (id) => `/bank/${id}`,
   updateStatus: (id) => `/banks/${id}/status`,
@@ -208,10 +209,22 @@ export const PURCHASE_API = {
 export const CONTRACT_API = {
   getlist: "/contract",
   create: "/contract",
+  getActiveContractRef: "/getActiveContractRef",
+  getActiveContractRefwithData: "/getActiveContractRefwithData",
   getContractNo: "/getContractNo",
   checkContractRef: "/checkContractRef",
   getById: (id) => `/contract/${id}`,
   updateById: (id) => `/contract/${id}`,
   updateStatus: (id) => `/contracts/${id}/status`,
   deleteSubs: (id) => `/deletecontractSub/${id}`,
+};
+export const INVOICE_API = {
+  getlist: "/invoice",
+  create: "/invoice",
+  geInvoiceNo: "/getInvoiceNo",
+  checkInvoiceRef: "/checkInvoiceRef",
+  getById: (id) => `/invoice/${id}`,
+  updateById: (id) => `/invoice/${id}`,
+  updateStatus: (id) => `/invoices/${id}/status`,
+  deleteSubs: (id) => `/deleteinvoiceSub/${id}`,
 };
