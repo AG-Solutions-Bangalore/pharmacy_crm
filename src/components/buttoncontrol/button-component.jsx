@@ -1024,6 +1024,52 @@ export const ContractEdit = forwardRef(({ onClick, className }, ref) => {
 });
 
 ContractEdit.page = "Contract";
+/////// MASTER – InvoiceCreate
+export const InvoiceCreate = forwardRef(({ onClick, className }, ref) => {
+  const userId = useSelector((state) => state.auth.user?.id);
+  const buttonPermissions = useSelector(
+    (state) => state.permissions.buttonPermissions
+  );
+
+  if (!checkPermission(String(userId), "InvoiceCreate", buttonPermissions)) {
+    return null;
+  }
+
+  return (
+    <Button ref={ref} variant="default" className={className} onClick={onClick}>
+      <SquarePlus className="h-4 w-4 mr-2" />
+      Invoice
+    </Button>
+  );
+});
+
+InvoiceCreate.page = "Invoice";
+
+/////// MASTER – Invoice
+export const InvoiceEdit = forwardRef(({ onClick, className }, ref) => {
+  const userId = useSelector((state) => state.auth.user?.id);
+  const buttonPermissions = useSelector(
+    (state) => state.permissions.buttonPermissions
+  );
+
+  if (!checkPermission(String(userId), "InvoiceEdit", buttonPermissions)) {
+    return null;
+  }
+
+  return (
+    <Button
+      ref={ref}
+      onClick={onClick}
+      className={className}
+      variant="ghost"
+      size="icon"
+    >
+      <Edit className="h-4 w-4 text-black" />
+    </Button>
+  );
+});
+
+InvoiceEdit.page = "Invoice";
 export default {
   BuyerCreate,
   EditBuyer,
@@ -1069,4 +1115,6 @@ export default {
   PurchaseEdit,
   ContractCreate,
   ContractEdit,
+  InvoiceCreate,
+  InvoiceEdit,
 };

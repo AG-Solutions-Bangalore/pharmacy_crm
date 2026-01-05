@@ -144,6 +144,11 @@ const NAVIGATION_CONFIG = [
     icon: Users,
   },
   {
+    title: "Invoice",
+    url: "/invoice",
+    icon: Users,
+  },
+  {
     title: "User Management",
     url: "/userManagement",
     icon: Frame,

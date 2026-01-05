@@ -1,7 +1,9 @@
 import {
+  BANK_API,
   BRANCH_API,
   BUYER_LIST,
   CONTAINERSIZE_API,
+  CONTRACT_API,
   COUNTRY_API,
   COUNTRYPORT_API,
   GRCODE_API,
@@ -15,7 +17,7 @@ import {
   SCHEME_API,
   STATE_API,
   VENDOR_API,
-  YEAR
+  YEAR,
 } from "@/constants/apiConstants";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 
@@ -68,6 +70,14 @@ const MASTER_APIS = {
   grcode: {
     url: GRCODE_API.active,
     queryKey: ["grcode-active"],
+  },
+  contractref: {
+    url: CONTRACT_API.getActiveContractRef,
+    queryKey: ["contract-ref"],
+  },
+  bank: {
+    url: BANK_API.active,
+    queryKey: ["bank-ref"],
   },
 
   year: {

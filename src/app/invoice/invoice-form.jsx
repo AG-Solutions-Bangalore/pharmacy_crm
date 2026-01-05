@@ -1,13 +1,8 @@
 import ApiErrorPage from "@/components/api-error/api-error";
 import PageHeader from "@/components/common/page-header";
 import LoadingBar from "@/components/loader/loading-bar";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { useQueryClient } from "@tanstack/react-query";
-import { FileText, Loader2, Plus, Trash2, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
+import Field from "@/components/SelectField/Field";
+import SelectField from "@/components/SelectField/SelectField";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,9 +13,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import Field from "@/components/SelectField/Field";
-import SelectField from "@/components/SelectField/SelectField";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -30,94 +32,88 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { CONTRACT_API } from "@/constants/apiConstants";
+import { CONTRACT_API, INVOICE_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import useMasterQueries from "@/hooks/useMasterQueries";
+import { useQueryClient } from "@tanstack/react-query";
+import { FileText, Loader2, Plus, Trash2, X } from "lucide-react";
 import moment from "moment";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 const EMPTY_SUB = {
   id: "",
-  contractSub_item_id: "",
-  contractSub_qnty: "",
-  contractSub_mrp: "",
-  contractSub_item_gst: "",
-  contractSub_batch_no: "",
-  contractSub_manufacture_date: "",
-  contractSub_expire_date: "",
+  invoiceSub_item_id: "",
+  invoiceSub_qnty: "",
+  invoiceSub_mrp: "",
+  invoiceSub_item_gst: "",
+  invoiceSub_batch_no: "",
+  invoiceSub_manufacture_date: "",
+  invoiceSub_expire_date: "",
 };
 
 const INITIAL_STATE = {
   branch_short: "",
-  branch_name: "",
-  branch_address: "",
-
+  invoice_date: "",
   contract_date: moment().format("YYYY-MM-DD"),
-  contract_no: "",
+  invoice_no: "",
+  invoice_ref: "",
   contract_ref: "",
   contract_pono: "",
-  contract_buyer_id: "",
-  contract_buyer: "",
-  contract_buyer_add: "",
-  contract_consignee_id: "",
-  contract_consignee: "",
-  contract_consignee_add: "",
+  invoice_buyer_id: "",
+  invoice_buyer: "",
+  invoice_buyer_add: "",
+  invoice_consignee_id: "",
+  invoice_consignee: "",
+  invoice_consignee_add: "",
+  invoice_consig_bank: "",
+  invoice_consig_bank_address: "",
+  invoice_container_size: "",
+  invoice_product: "",
+  invoice_product_cust_des: "",
+  invoice_gr_code: "",
+  invoice_lut_code: "",
+  invoice_vessel_flight_no: "",
 
-  contract_container_size: "",
-  contract_product: "",
-  contract_product_cust_des: "",
-  contract_gr_code: "",
-  contract_lut_code: "",
-  contract_vessel_flight_no: "",
+  invoice_loading: "",
+  invoice_prereceipts: "",
+  invoice_precarriage: "",
 
-  contract_loading: "",
-  contract_prereceipts: "",
-  contract_precarriage: "",
+  invoice_destination_port: "",
+  invoice_discharge: "",
+  invoice_cif: "",
+  invoice_destination_country: "",
 
-  contract_destination_port: "",
-  contract_discharge: "",
-  contract_cif: "",
-  contract_destination_country: "",
-
-  contract_freight_charges: "",
-  contract_dollar_rate: "",
-  contract_shipment: "",
-  contract_ship_date: "",
-
-  contract_specification1: "",
-  contract_specification2: "",
-  contract_payment_terms: "",
-  contract_remarks: "",
-  contract_status: "Open",
+  invoice_dollar_rate: "",
+  invoice_payment_terms: "",
+  invoice_remarks: "",
+  invoice_status: "Open",
 
   subs: [{ ...EMPTY_SUB }],
 };
 const REQUIRED_FIELDS = {
-  contract_buyer: "Buyer is required",
-  contract_consignee: "Consignee is required",
+  invoice_buyer: "Buyer is required",
+  invoice_consignee: "Consignee is required",
   branch_short: "Company is required",
-  contract_no: "Contract No is required",
-  contract_ref: "Ref is required",
+  invoice_no: "Invoice No is required",
+  invoice_ref: "Ref is required",
   contract_pono: "Pono is required",
+  invoice_date: "Invoice Date is required",
   contract_date: "Contract Date is required",
-  contract_product: "Product is required",
-  contract_loading: "Port is required",
-  contract_destination_port: "Destination Port is required",
-  contract_destination_country: "Destination Country is required",
-  contract_discharge: "Discharge is required",
-  contract_cif: "CIF is required",
-  contract_gr_code: "GR Code is required",
-  contract_lut_code: "Lut Code is required",
-  contract_container_size: "Container/Size is required",
-  contract_payment_terms: "Payment Terms is required",
+  invoice_loading: "Port is required",
+  invoice_product_cust_des: "Cust Des  is required",
+  invoice_destination_port: "Destination Port is required",
+  invoice_destination_country: "Destination Country is required",
+  invoice_discharge: "Discharge is required",
+  invoice_cif: "CIF is required",
+  invoice_gr_code: "GR Code is required",
+  invoice_lut_code: "Lut Code is required",
+  invoice_container_size: "Container/Size is required",
+  invoice_dollar_rate: "Dollor Rate is required",
+  invoice_payment_terms: "Payment Terms is required",
 };
-const ContractForm = () => {
+const InvoiceForm = () => {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
@@ -125,7 +121,7 @@ const ContractForm = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [subToDelete, setSubToDelete] = useState(null);
   const [formData, setFormData] = useState(INITIAL_STATE);
-  const [contractNoOptions, setContractNoOptions] = useState([]);
+  const [invoiceNoOptions, setInvoiceNoOptions] = useState([]);
   const [errors, setErrors] = useState({});
   const { trigger, loading } = useApiMutation();
   const { trigger: fetchRef, loading: refloading, referror } = useApiMutation();
@@ -151,6 +147,8 @@ const ContractForm = () => {
     "prereceipt",
     "precarriage",
     "scheme",
+    "contractref",
+    "bank",
   ]);
 
   const {
@@ -241,78 +239,99 @@ const ContractForm = () => {
     error: schemeError,
     refetch: refetchscheme,
   } = master.scheme;
+  const {
+    data: ContractrefData,
+    loading: loadingcontractref,
+    error: contractrefError,
+    refetch: refetchcontractref,
+  } = master.contractref;
+  const {
+    data: BankData,
+    loading: loadingbank,
+    error: bankError,
+    refetch: refetchbank,
+  } = master.bank;
 
   useEffect(() => {
     if (!isEdit || !id) return;
 
     (async () => {
       const res = await fetchData({
-        url: CONTRACT_API.getById(id),
+        url: INVOICE_API.getById(id),
       });
 
       const data = res?.data || {};
 
       setFormData({
         ...INITIAL_STATE,
+
+        // ─── Branch ───────────────────────────────
         branch_short: data.branch_short ?? "",
         branch_name: data.branch_name ?? "",
         branch_address: data.branch_address ?? "",
 
+        // ─── Dates ────────────────────────────────
         contract_date: data.contract_date
           ? moment(data.contract_date).format("YYYY-MM-DD")
           : moment().format("YYYY-MM-DD"),
+        invoice_date: data.invoice_date
+          ? moment(data.invoice_date).format("YYYY-MM-DD")
+          : moment().format("YYYY-MM-DD"),
 
-        contract_no: data.contract_no ?? "",
+        // ─── Invoice / Contract ───────────────────
+        invoice_no: data.invoice_no ?? "",
+        invoice_ref: data.invoice_ref ?? "",
         contract_ref: data.contract_ref ?? "",
         contract_pono: data.contract_pono ?? "",
 
-        contract_buyer_id: data.contract_buyer_id ?? "",
-        contract_buyer: data.contract_buyer ?? "",
-        contract_buyer_add: data.contract_buyer_add ?? "",
+        // ─── Buyer ────────────────────────────────
+        invoice_buyer_id: data.invoice_buyer_id ?? "",
+        invoice_buyer: data.invoice_buyer ?? "",
+        invoice_buyer_add: data.invoice_buyer_add ?? "",
 
-        contract_consignee_id: data.contract_consignee_id ?? "",
-        contract_consignee: data.contract_consignee ?? "",
-        contract_consignee_add: data.contract_consignee_add ?? "",
+        // ─── Consignee ────────────────────────────
+        invoice_consignee_id: data.invoice_consignee_id ?? "",
+        invoice_consignee: data.invoice_consignee ?? "",
+        invoice_consignee_add: data.invoice_consignee_add ?? "",
+        invoice_consig_bank: data.invoice_consig_bank ?? "",
+        invoice_consig_bank_address: data.invoice_consig_bank_address ?? "",
 
-        contract_container_size: data.contract_container_size ?? "",
-        contract_product: data.contract_product ?? "",
-        contract_product_cust_des: data.contract_product_cust_des ?? "",
-        contract_gr_code: data.contract_gr_code ?? "",
-        contract_lut_code: data.contract_lut_code ?? "",
-        contract_vessel_flight_no: data.contract_vessel_flight_no ?? "",
+        // ─── Shipment ─────────────────────────────
+        invoice_container_size: data.invoice_container_size ?? "",
+        invoice_product: data.invoice_product ?? "",
+        invoice_product_cust_des: data.invoice_product_cust_des ?? "",
+        invoice_gr_code: data.invoice_gr_code ?? "",
+        invoice_lut_code: data.invoice_lut_code ?? "",
+        invoice_vessel_flight_no: data.invoice_vessel_flight_no ?? "",
 
-        contract_loading: data.contract_loading ?? "",
-        contract_prereceipts: data.contract_prereceipts ?? "",
-        contract_precarriage: data.contract_precarriage ?? "",
+        invoice_loading: data.invoice_loading ?? "",
+        invoice_prereceipts: data.invoice_prereceipts ?? "",
+        invoice_precarriage: data.invoice_precarriage ?? "",
 
-        contract_destination_port: data.contract_destination_port ?? "",
-        contract_discharge: data.contract_discharge ?? "",
-        contract_cif: data.contract_cif ?? "",
-        contract_destination_country: data.contract_destination_country ?? "",
+        invoice_destination_port: data.invoice_destination_port ?? "",
+        invoice_discharge: data.invoice_discharge ?? "",
+        invoice_cif: data.invoice_cif ?? "",
+        invoice_destination_country: data.invoice_destination_country ?? "",
 
-        contract_freight_charges: data.contract_freight_charges ?? "",
-        contract_dollar_rate: data.contract_dollar_rate ?? "",
-        contract_shipment: data.contract_shipment ?? "",
-        contract_ship_date: data.contract_ship_date ?? "",
+        // ─── Payment ──────────────────────────────
+        invoice_dollar_rate: data.invoice_dollar_rate ?? "",
+        invoice_payment_terms: data.invoice_payment_terms ?? "",
+        invoice_remarks: data.invoice_remarks ?? "",
+        invoice_status: data.invoice_status ?? "Open",
 
-        contract_specification1: data.contract_specification1 ?? "",
-        contract_specification2: data.contract_specification2 ?? "",
-        contract_payment_terms: data.contract_payment_terms ?? "",
-        contract_remarks: data.contract_remarks ?? "",
-        contract_status: data.contract_status ?? "",
         subs:
           Array.isArray(data.subs) && data.subs.length > 0
             ? data.subs.map((s) => ({
                 ...EMPTY_SUB,
                 id: s.id ?? "",
-                contractSub_item_id: String(s.contractSub_item_id) ?? "",
-                contractSub_qnty: s.contractSub_qnty ?? "",
-                contractSub_mrp: s.contractSub_mrp ?? "",
-                contractSub_item_gst: s.contractSub_item_gst ?? "",
-                contractSub_batch_no: s.contractSub_batch_no ?? "",
-                contractSub_manufacture_date:
-                  s.contractSub_manufacture_date ?? "",
-                contractSub_expire_date: s.contractSub_expire_date ?? "",
+                invoiceSub_item_id: String(s.invoiceSub_item_id ?? ""),
+                invoiceSub_qnty: s.invoiceSub_qnty ?? "",
+                invoiceSub_mrp: s.invoiceSub_mrp ?? "",
+                invoiceSub_item_gst: s.invoiceSub_item_gst ?? "",
+                invoiceSub_batch_no: s.invoiceSub_batch_no ?? "",
+                invoiceSub_manufacture_date:
+                  s.invoiceSub_manufacture_date ?? "",
+                invoiceSub_expire_date: s.invoiceSub_expire_date ?? "",
               }))
             : [{ ...EMPTY_SUB }],
       });
@@ -335,56 +354,146 @@ const ContractForm = () => {
   const handleSelectChange = async (name, value) => {
     setFormData((p) => ({ ...p, [name]: value }));
 
+    if (name === "contract_ref") {
+      const res = await trigger({
+        url: CONTRACT_API.getActiveContractRefwithData,
+        method: "POST",
+        data: { contract_ref: value },
+      });
+
+      const data = res?.data;
+      if (!data) return;
+      const resdata = await fetchRef({
+        url: `${INVOICE_API.geInvoiceNo}/${data.branch_short}`,
+        method: "get",
+      });
+
+      const options = resdata?.data
+        ? [{ invoice_no: String(resdata.data) }]
+        : [];
+      setInvoiceNoOptions(options);
+
+      setFormData((p) => ({
+        ...p,
+
+        // ===== BASIC =====
+        contract_ref: data.contract_ref,
+        contract_pono: data.contract_pono,
+        branch_short: data.branch_short,
+        contract_date: data.contract_date,
+        invoice_ref: `${data.branch_short}/${data.contract_buyer}${data.contract_year}${data.contract_no}`,
+
+        // ===== BUYER =====
+        invoice_buyer_id: data.contract_buyer_id,
+        invoice_buyer: data.contract_buyer,
+        invoice_buyer_add: data.contract_buyer_add,
+
+        // ===== CONSIGNEE =====
+        invoice_consignee_id: data.contract_consignee_id,
+        invoice_consignee: data.contract_consignee,
+        invoice_consignee_add: data.contract_consignee_add,
+
+        // ===== PRODUCT / LOGISTICS =====
+        invoice_container_size: data.contract_container_size,
+        invoice_product: data.contract_product,
+        invoice_product_cust_des: data.contract_product_cust_des ?? "",
+        invoice_gr_code: data.contract_gr_code,
+        invoice_lut_code: data.contract_lut_code,
+        invoice_vessel_flight_no: data.contract_vessel_flight_no ?? "",
+
+        invoice_loading: data.contract_loading,
+        invoice_prereceipts: data.contract_prereceipts ?? "",
+        invoice_precarriage: data.contract_precarriage ?? "",
+
+        invoice_destination_port: data.contract_destination_port,
+        invoice_discharge: data.contract_discharge,
+        invoice_cif: data.contract_cif,
+        invoice_destination_country: data.contract_destination_country,
+
+        invoice_payment_terms: data.contract_payment_terms ?? "",
+        invoice_remarks: data.contract_remarks ?? "",
+
+        subs:
+          data.subs?.length > 0
+            ? data.subs.map((s) => ({
+                id: "",
+                invoiceSub_item_id: String(s.contractSub_item_id),
+                invoiceSub_qnty: s.contractSub_qnty,
+                invoiceSub_mrp: s.contractSub_mrp,
+                invoiceSub_item_gst: s.contractSub_item_gst,
+                invoiceSub_batch_no: s.contractSub_batch_no,
+                invoiceSub_manufacture_date: s.contractSub_manufacture_date,
+                invoiceSub_expire_date: s.contractSub_expire_date,
+              }))
+            : [{ ...EMPTY_SUB }],
+      }));
+
+      clearErrors(
+        "contract_ref",
+        "contract_pono",
+        "branch_short",
+        "invoice_buyer",
+        "invoice_consignee",
+        "invoice_destination_port",
+        "invoice_discharge",
+        "invoice_cif",
+        "invoice_destination_country"
+      );
+
+      return;
+    }
+
     if (name === "branch_short") {
       const selectedBranch = branchData?.data?.find(
         (b) => b.branch_short === value
       );
 
       const res = await fetchRef({
-        url: `${CONTRACT_API.getContractNo}/${value}`,
+        url: `${INVOICE_API.geInvoiceNo}/${value}`,
         method: "get",
       });
+
+      const options = res?.data ? [{ invoice_no: String(res.data) }] : [];
       const ref = selectedBranch
         ? `${selectedBranch.branch_name_short}/${
             formData.buyer_sort ? formData.buyer_sort : ""
-          }/${yearData?.data?.current_year}/${formData.contract_no}`
+          }/${yearData?.data?.current_year}/${formData.invoice_no}`
         : "";
-      const options = res?.data ? [{ contract_no: String(res.data) }] : [];
-
-      setContractNoOptions(options);
+      setInvoiceNoOptions(options);
 
       setFormData((p) => ({
         ...p,
         branch_short: value,
         branch_name: selectedBranch?.branch_name || "",
         branch_address: selectedBranch?.branch_address || "",
-        contract_loading: selectedBranch?.branch_port_of_loading || "",
-        contract_no: "",
-        contract_ref: ref,
-        contract_pono: ref,
+        invoice_loading: selectedBranch?.branch_port_of_loading || "",
+        invoice_no: "",
+        invoice_ref: ref,
+        // contract_ref: ref,
+        // contract_pono: ref,
       }));
       clearErrors(
         "branch_short",
-        "contract_loading",
-        "contract_no",
-        "contract_ref",
-        "contract_pono"
+        "invoice_loading",
+        "invoice_no"
+        // "contract_ref",
+        // "contract_pono"
       );
       return;
     }
 
-    if (name === "contract_buyer") {
+    if (name === "invoice_buyer") {
       const selectedBuyer = buyerData?.data?.find(
         (x) => x.buyer_name === value
       );
 
       if (!selectedBuyer) return;
+
       const branch = branchData?.data?.find(
         (b) => b.branch_short == formData.branch_short
       );
-
       const ref = branch
-        ? `${branch.branch_name_short}/${selectedBuyer.buyer_sort}/${yearData?.data?.current_year}/${formData.contract_no}`
+        ? `${branch.branch_name_short}/${selectedBuyer.buyer_sort}/${yearData?.data?.current_year}/${formData.invoice_no}`
         : "";
       const validPort = countryPortData?.data?.some(
         (p) => p.country_port === selectedBuyer.buyer_port
@@ -395,41 +504,71 @@ const ContractForm = () => {
       );
       setFormData((p) => ({
         ...p,
-        contract_buyer: value,
-        contract_buyer_id: selectedBuyer.id,
-        contract_buyer_add: selectedBuyer.buyer_address,
-        contract_consignee: selectedBuyer.buyer_name,
-        contract_consignee_add: selectedBuyer.buyer_address,
-        contract_consignee_id: selectedBuyer.id,
-        contract_destination_country: validCountry
+        invoice_buyer: value,
+        invoice_buyer_id: selectedBuyer.id,
+        invoice_buyer_add: selectedBuyer.buyer_address,
+        // invoice_consignee: selectedBuyer.buyer_name,
+        // invoice_consignee_add: selectedBuyer.buyer_address,
+        // invoice_consignee_id: selectedBuyer.id,
+        invoice_destination_country: validCountry
           ? selectedBuyer.buyer_country
           : "",
-        contract_ref: ref,
-        contract_pono: ref,
-        contract_destination_port: destinationPort,
-        contract_discharge: destinationPort,
-        contract_cif: destinationPort,
+        invoice_ref: ref,
+        // contract_ref: ref,
+        // contract_pono: ref,
+        invoice_destination_port: destinationPort,
+        invoice_discharge: destinationPort,
+        invoice_cif: destinationPort,
       }));
-      clearErrors("contract_buyer", "contract_consignee");
+      clearErrors("invoice_buyer", "invoice_consignee");
 
       if (validCountry) {
-        clearErrors("contract_destination_country");
+        clearErrors("invoice_destination_country");
       }
       if (ref) {
-        clearErrors("contract_ref", "contract_pono");
+        // clearErrors("contract_ref", "contract_pono");
+        // clearErrors("contract_pono");
       }
 
       if (destinationPort) {
         clearErrors(
-          "contract_destination_port",
-          "contract_discharge",
-          "contract_cif"
+          "invoice_destination_port",
+          "invoice_discharge",
+          "invoice_cif"
         );
       }
       return;
     }
+    if (name == "invoice_consig_bank") {
+      const selectedBank = buyerData?.data?.find((x) => x.buyer_name === value);
+      if (!selectedBank) return;
 
-    if (name === "contract_destination_port") {
+      setFormData((p) => ({
+        ...p,
+        invoice_consig_bank_address: selectedBank.buyer_address,
+      }));
+
+      return;
+    }
+    if (name === "invoice_consignee") {
+      const selectedBuyer = buyerData?.data?.find(
+        (x) => x.buyer_name === value
+      );
+
+      if (!selectedBuyer) return;
+
+      setFormData((p) => ({
+        ...p,
+        invoice_consignee: selectedBuyer.buyer_name,
+        invoice_consignee_add: selectedBuyer.buyer_address,
+        invoice_consignee_id: selectedBuyer.id,
+      }));
+      clearErrors("invoice_consignee");
+
+      return;
+    }
+
+    if (name === "invoice_destination_country") {
       const cp = countryPortData?.data?.find((x) => x.country_port === value);
       const validCountry = countryData?.data?.some(
         (p) => p.country_port === cp.buyer_port
@@ -437,15 +576,15 @@ const ContractForm = () => {
       console.log(validCountry);
       setFormData((p) => ({
         ...p,
-        contract_destination_port: value,
-        contract_discharge: value,
-        contract_cif: value,
-        contract_destination_country: validCountry ? cp?.country_name : "",
+        invoice_destination_port: value,
+        invoice_discharge: value,
+        invoice_cif: value,
+        invoice_destination_country: validCountry ? cp?.country_name : "",
       }));
       clearErrors(
-        "contract_destination_port",
-        "contract_discharge",
-        "contract_cif"
+        "invoice_destination_country",
+        "invoice_discharge",
+        "invoice_cif"
       );
       if (validCountry) {
         clearErrors("contract_destination_country");
@@ -453,27 +592,28 @@ const ContractForm = () => {
       return;
     }
 
-    if (name === "contract_no") {
+    if (name === "invoice_no") {
       const branch = branchData?.data?.find(
         (b) => b.branch_short === formData.branch_short
       );
 
       const buyer = buyerData?.data?.find(
-        (b) => b.buyer_name === formData.contract_buyer
+        (b) => b.buyer_name === formData.invoice_buyer
       );
 
       const ref =
         branch && buyer
-          ? `${branch.branch_name_short}/${buyer.buyer_sort}/${yearData?.data?.current_year}/${value}`
+          ? `${branch.branch_name_short}/${buyer.buyer_sort}${yearData?.data?.current_year}/${value}`
           : "";
 
       setFormData((p) => ({
         ...p,
-        contract_no: value,
-        contract_ref: ref,
-        contract_pono: ref,
+        invoice_no: value,
+        invoice_ref: ref,
+        // contract_ref: ref,
+        // contract_pono: ref,
       }));
-      clearErrors("contract_no", "contract_ref", "contract_pono");
+      clearErrors("invoice_no", "invoice_ref");
     }
     clearErrors(name);
   };
@@ -490,30 +630,31 @@ const ContractForm = () => {
     });
 
     formData.subs.forEach((row, idx) => {
-      if (!row.contractSub_item_id) {
-        newErrors[`subs.${idx}.contractSub_item_id`] = "Item is required";
+      if (!row.invoiceSub_item_id) {
+        newErrors[`subs.${idx}.invoiceSub_item_id`] = "Item is required";
       }
-      if (!row.contractSub_qnty) {
-        newErrors[`subs.${idx}.contractSub_qnty`] = "Qty is required";
+      if (!row.invoiceSub_qnty) {
+        newErrors[`subs.${idx}.invoiceSub_qnty`] = "Qty is required";
       }
-      if (!row.contractSub_mrp) {
-        newErrors[`subs.${idx}.contractSub_mrp`] = "Mrp is required";
+      if (!row.invoiceSub_mrp) {
+        newErrors[`subs.${idx}.invoiceSub_mrp`] = "Mrp is required";
       }
-      if (!row.contractSub_item_gst) {
-        newErrors[`subs.${idx}.contractSub_item_gst`] = "Item Gst required";
+      if (!row.invoiceSub_item_gst) {
+        newErrors[`subs.${idx}.invoiceSub_item_gst`] = "Item Gst required";
       }
-      if (!row.contractSub_batch_no) {
-        newErrors[`subs.${idx}.contractSub_batch_no`] = "Batch No required";
+      if (!row.invoiceSub_batch_no) {
+        newErrors[`subs.${idx}.invoiceSub_batch_no`] = "Batch No required";
       }
-      if (!row.contractSub_manufacture_date) {
-        newErrors[`subs.${idx}.contractSub_manufacture_date`] =
+      if (!row.invoiceSub_manufacture_date) {
+        newErrors[`subs.${idx}.invoiceSub_manufacture_date`] =
           "Manuf Date is required";
       }
-      if (!row.contractSub_expire_date) {
-        newErrors[`subs.${idx}.contractSub_expire_date`] =
+      if (!row.invoiceSub_expire_date) {
+        newErrors[`subs.${idx}.invoiceSub_expire_date`] =
           "Expire Date is required";
       }
     });
+    console.log(newErrors)
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -527,29 +668,29 @@ const ContractForm = () => {
     try {
       if (!isEdit) {
         const refCheckRes = await trigger({
-          url: CONTRACT_API.checkContractRef,
+          url: INVOICE_API.checkInvoiceRef,
           method: "POST",
-          data: { contract_ref: formData.contract_ref },
+          data: { invoice_ref: formData.invoice_ref },
         });
 
         if (refCheckRes?.code !== 201) {
           toast.error(
-            refCheckRes?.message || "Contract reference already exists"
+            refCheckRes?.message || "Invoice reference already exists"
           );
           return;
         }
       }
 
       const res = await trigger({
-        url: isEdit ? CONTRACT_API.updateById(id) : CONTRACT_API.create,
+        url: isEdit ? INVOICE_API.updateById(id) : INVOICE_API.create,
         method: isEdit ? "PUT" : "POST",
         data: formData,
       });
 
       if (res?.code === 201) {
         toast.success(res?.message || "Contract saved successfully");
-        queryClient.invalidateQueries(["contract-list"]);
-        navigate("/contract");
+        queryClient.invalidateQueries(["invoice-list"]);
+        navigate("/invoice");
         return;
       }
 
@@ -559,24 +700,17 @@ const ContractForm = () => {
     }
   };
 
-  // const handleSubChange = (index, key, value) => {
-  //   const subs = [...formData.subs];
-  //   subs[index][key] = value;
-  //   setFormData((p) => ({ ...p, subs }));
-  //   clearErrors(`subs.${index}.${key}`);
-  // };
   const handleSubChange = (index, key, value) => {
     const subs = [...formData.subs];
 
-    // Set selected value
     subs[index][key] = value;
 
-    if (key === "contractSub_item_id") {
+    if (key === "invoiceSub_item_id") {
       const selectedItem = itemData?.data?.find(
         (item) => String(item.id) === String(value)
       );
 
-      subs[index].contractSub_item_gst = selectedItem?.item_gst ?? "";
+      subs[index].invoiceSub_item_gst = selectedItem?.item_gst ?? "";
     }
 
     setFormData((p) => ({
@@ -606,7 +740,7 @@ const ContractForm = () => {
 
     try {
       const res = await Deletetrigger({
-        url: CONTRACT_API.deleteSubs(subToDelete.id),
+        url: INVOICE_API.deleteSubs(subToDelete.id),
         method: "DELETE",
       });
       if (res.code == 201) {
@@ -699,7 +833,7 @@ const ContractForm = () => {
 
       <PageHeader
         icon={FileText}
-        title={isEdit ? "Edit Contract" : "Create Contract"}
+        title={isEdit ? "Edit Invoice" : "Create Invoice"}
         rightContent={
           <Button onClick={handleSubmit} disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -712,25 +846,44 @@ const ContractForm = () => {
         <div className="mb-0">
           <div className="grid md:grid-cols-4 gap-4">
             <SelectField
+              label="Contract Ref"
+              required
+              value={formData.contract_ref}
+              onChange={(v) => handleSelectChange("contract_ref", v)}
+              options={ContractrefData?.data}
+              optionKey="contract_ref"
+              optionLabel="contract_ref"
+              error={errors.contract_ref}
+            />
+
+            <SelectField
               label="Buyer"
               required
-              value={formData.contract_buyer}
-              onChange={(v) => handleSelectChange("contract_buyer", v)}
+              value={formData.invoice_buyer}
+              onChange={(v) => handleSelectChange("invoice_buyer", v)}
               options={buyerData?.data}
               optionKey="buyer_name"
               optionLabel="buyer_name"
-              error={errors.contract_buyer}
+              error={errors.invoice_buyer}
             />
 
             <SelectField
               label="Consignee"
               required
-              value={formData.contract_consignee}
-              onChange={(v) => handleSelectChange("contract_consignee", v)}
+              value={formData.invoice_consignee}
+              onChange={(v) => handleSelectChange("invoice_consignee", v)}
               options={buyerData?.data}
               optionKey="buyer_name"
               optionLabel="buyer_name"
-              error={errors.contract_consignee}
+              error={errors.invoice_consignee}
+            />
+            <SelectField
+              label="Bank"
+              value={formData.invoice_consig_bank}
+              onChange={(v) => handleSelectChange("invoice_consig_bank", v)}
+              options={buyerData?.data}
+              optionKey="buyer_name"
+              optionLabel="buyer_name"
             />
             <SelectField
               label="Company"
@@ -742,55 +895,59 @@ const ContractForm = () => {
               optionLabel="branch_short"
               error={errors.branch_short}
             />
+            <Textarea
+              value={formData.invoice_buyer_add || ""}
+              className="text-[9px] bg-white"
+              onChange={(e) =>
+                handleChange("invoice_buyer_add", e.target.value)
+              }
+            />
 
-            {!isEdit ? (
-              <SelectField
-                label="Contract No "
-                required
-                value={formData.contract_no}
-                onChange={(v) => handleSelectChange("contract_no", v)}
-                options={contractNoOptions}
-                optionKey="contract_no"
-                optionLabel="contract_no"
-                error={errors.contract_no}
-              />
-            ) : (
-              <Field
-                label="Contract No"
-                value={formData.contract_no}
-                disabled
-              />
-            )}
+            <Textarea
+              value={formData.invoice_consignee_add || ""}
+              className="text-[9px] bg-white"
+              onChange={(e) =>
+                handleChange("invoice_consignee_add", e.target.value)
+              }
+            />
+            <Textarea
+              value={formData.invoice_consig_bank_address || ""}
+              className="text-[9px] bg-white"
+              onChange={(e) =>
+                handleChange("invoice_consig_bank_address", e.target.value)
+              }
+            />
           </div>
         </div>
         <div className="mt-[2px]">
           <div className="grid md:grid-cols-4 gap-4">
-            <Textarea
-              value={formData.contract_buyer_add || ""}
-              className="text-[9px] bg-white"
-              onChange={(e) =>
-                handleChange("contract_buyer_add", e.target.value)
-              }
+            <Field
+              label="Invoice Ref *"
+              value={formData.invoice_ref}
+              disabled
+              error={errors.invoice_ref}
             />
-
-            <Textarea
-              value={formData.contract_consignee_add || ""}
-              className="text-[9px] bg-white"
-              onChange={(e) =>
-                handleChange("contract_consignee_add", e.target.value)
-              }
+            {!isEdit ? (
+              <SelectField
+                label="Invoice No "
+                required
+                value={formData.invoice_no}
+                onChange={(v) => handleSelectChange("invoice_no", v)}
+                options={invoiceNoOptions}
+                optionKey="invoice_no"
+                optionLabel="invoice_no"
+                error={errors.invoice_no}
+              />
+            ) : (
+              <Field label="Invoice No" value={formData.invoice_no} disabled />
+            )}
+            <Field
+              label="Invoice Date *"
+              type="date"
+              value={formData.invoice_date}
+              onChange={(v) => handleChange("invoice_date", v)}
+              error={errors.invoice_date}
             />
-
-            <div
-              style={{ textAlign: "center" }}
-              className="bg-white rounded-md border"
-            >
-              <span style={{ fontSize: "12px" }}>{formData.branch_name}</span>
-              <br />
-              <span style={{ fontSize: "9px", display: "block" }}>
-                {formData.branch_address}
-              </span>
-            </div>
             <Field
               label="Contract Date *"
               type="date"
@@ -816,34 +973,34 @@ const ContractForm = () => {
           <SelectField
             label="Product"
             required
-            value={formData.contract_product}
-            onChange={(v) => handleChange("contract_product", v)}
+            value={formData.invoice_product}
+            onChange={(v) => handleChange("invoice_product", v)}
             options={productData?.data}
             optionKey="product_name"
             optionLabel="product_name"
-            error={errors.contract_product}
+            error={errors.invoice_product}
           />
 
           <SelectField
             label="Port of Loading"
             required
-            value={formData.contract_loading}
-            onChange={(v) => handleChange("contract_loading", v)}
+            value={formData.invoice_loading}
+            onChange={(v) => handleChange("invoice_loading", v)}
             options={portData?.data}
             optionKey="portofLoading"
             optionLabel="portofLoading"
-            error={errors.contract_loading}
+            error={errors.invoice_loading}
           />
 
           <SelectField
             label="Destination Port"
             required
-            value={formData.contract_destination_port}
-            onChange={(v) => handleSelectChange("contract_destination_port", v)}
+            value={formData.invoice_destination_port}
+            onChange={(v) => handleSelectChange("invoice_destination_port", v)}
             options={countryPortData?.data}
             optionKey="country_port"
             optionLabel="country_port"
-            error={errors.contract_destination_port}
+            error={errors.invoice_destination_port}
           />
         </div>
 
@@ -852,63 +1009,57 @@ const ContractForm = () => {
           <SelectField
             label="Port of Discharge"
             required
-            value={formData.contract_discharge}
-            onChange={(v) => handleSelectChange("contract_discharge", v)}
+            value={formData.invoice_discharge}
+            onChange={(v) => handleSelectChange("invoice_discharge", v)}
             options={countryPortData?.data}
             optionKey="country_port"
             optionLabel="country_port"
-            error={errors.contract_discharge}
+            error={errors.invoice_discharge}
           />
 
           <SelectField
             label="CIF"
             required
-            value={formData.contract_cif}
-            onChange={(v) => handleSelectChange("contract_cif", v)}
+            value={formData.invoice_cif}
+            onChange={(v) => handleSelectChange("invoice_cif", v)}
             options={countryPortData?.data}
             optionKey="country_port"
             optionLabel="country_port"
-            error={errors.contract_cif}
+            error={errors.invoice_cif}
           />
 
           <SelectField
             label="Dest Country"
             required
-            value={formData.contract_destination_country}
+            value={formData.invoice_destination_country}
             onChange={(v) =>
-              handleSelectChange("contract_destination_country", v)
+              handleSelectChange("invoice_destination_country", v)
             }
             options={countryData?.data}
             optionKey="country_name"
             optionLabel="country_name"
-            error={errors.contract_destination_country}
+            error={errors.invoice_destination_country}
           />
           <SelectField
             label="Container Size"
             required
-            value={formData.contract_container_size}
-            onChange={(v) => handleChange("contract_container_size", v)}
+            value={formData.invoice_container_size}
+            onChange={(v) => handleChange("invoice_container_size", v)}
             options={containerData?.data}
             optionKey="containerSize"
             optionLabel="containerSize"
-            error={errors.contract_container_size}
-          />
-          <Field
-            label="Shipment Date"
-            type="date"
-            value={formData.contract_ship_date}
-            onChange={(v) => handleChange("contract_ship_date", v)}
+            error={errors.invoice_container_size}
           />
 
           <SelectField
             label="GR Code"
             required
-            value={formData.contract_gr_code}
-            onChange={(v) => handleChange("contract_gr_code", v)}
+            value={formData.invoice_gr_code}
+            onChange={(v) => handleChange("invoice_gr_code", v)}
             options={grcodeData?.data}
             optionKey="product_name"
             optionLabel="product_name"
-            error={errors.contract_gr_code}
+            error={errors.invoice_gr_code}
           />
         </div>
 
@@ -916,9 +1067,9 @@ const ContractForm = () => {
           <SelectField
             label="LUT Code"
             required
-            value={formData.contract_lut_code}
-            onChange={(v) => handleChange("contract_lut_code", v)}
-            error={errors.contract_lut_code}
+            value={formData.invoice_lut_code}
+            onChange={(v) => handleChange("invoice_lut_code", v)}
+            error={errors.invoice_lut_code}
             options={schemeData?.data}
             optionKey="scheme_short"
             optionLabel="scheme_short"
@@ -926,22 +1077,22 @@ const ContractForm = () => {
 
           <Field
             label="Vessel / Flight No"
-            value={formData.contract_vessel_flight_no}
-            onChange={(v) => handleChange("contract_vessel_flight_no", v)}
+            value={formData.invoice_vessel_flight_no}
+            onChange={(v) => handleChange("invoice_vessel_flight_no", v)}
           />
 
           <SelectField
             label="Pre-Receipt"
-            value={formData.contract_prereceipts}
-            onChange={(v) => handleChange("contract_prereceipts", v)}
+            value={formData.invoice_prereceipts}
+            onChange={(v) => handleChange("invoice_prereceipts", v)}
             options={prereceiptData?.data}
             optionKey="prereceipts_name"
             optionLabel="prereceipts_name"
           />
           <SelectField
             label="Pre-Carriage"
-            value={formData.contract_precarriage}
-            onChange={(v) => handleChange("contract_precarriage", v)}
+            value={formData.invoice_precarriage}
+            onChange={(v) => handleChange("invoice_precarriage", v)}
             options={precarriageData?.data}
             optionKey="precarriage_name"
             optionLabel="precarriage_name"
@@ -954,46 +1105,36 @@ const ContractForm = () => {
           }`}
         >
           <Field
-            label="Customer Description"
-            value={formData.contract_product_cust_des}
-            onChange={(v) => handleChange("contract_product_cust_des", v)}
+            label="Customer Description *"
+            value={formData.invoice_product_cust_des}
+            onChange={(v) => handleChange("invoice_product_cust_des", v)}
+            error={errors.invoice_product_cust_des}
           />
           <Field
-            label="Freight Charges"
+            label="Dollar Rate *"
             type="number"
-            value={formData.contract_freight_charges}
-            onChange={(v) => handleChange("contract_freight_charges", v)}
+            value={formData.invoice_dollar_rate}
+            onChange={(v) => handleChange("invoice_dollar_rate", v)}
+            error={errors.invoice_dollar_rate}
           />
 
-          <Field
-            label="Dollar Rate"
-            type="number"
-            value={formData.contract_dollar_rate}
-            onChange={(v) => handleChange("contract_dollar_rate", v)}
-          />
-
-          <Field
-            label="Shipment Terms"
-            value={formData.contract_shipment}
-            onChange={(v) => handleChange("contract_shipment", v)}
-          />
           {isEdit && (
             <div className="col-span-1">
               <Label className="text-sm font-medium">Status</Label>
 
               <Select
-                value={formData.contract_status}
-                onValueChange={(v) => handleChange("contract_status", v)}
+                value={formData.invoice_status}
+                onValueChange={(v) => handleChange("invoice_status", v)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
 
                 <SelectContent>
-                  <SelectItem value="Open">
+                  <SelectItem value="Order in Hand">
                     <div className="flex items-center">
                       <div className="w-2 h-2 rounded-full bg-green-500 mr-2" />
-                      Open
+                      Order in Hand
                     </div>
                   </SelectItem>
 
@@ -1011,41 +1152,22 @@ const ContractForm = () => {
 
         <div className="grid md:grid-cols-4 gap-4">
           <div className="col-span-2">
-            <Label>Specification 1</Label>
-            <Textarea
-              value={formData.contract_specification1 ?? ""}
-              onChange={(e) =>
-                handleChange("contract_specification1", e.target.value)
-              }
-            />
-          </div>
-
-          <div className="col-span-2">
-            <Label>Specification 2</Label>
-            <Textarea
-              value={formData.contract_specification2 ?? ""}
-              onChange={(e) =>
-                handleChange("contract_specification2", e.target.value)
-              }
-            />
-          </div>
-          <div className="col-span-2">
             <SelectField
               label="Payment Terms"
               required
-              value={formData.contract_payment_terms}
-              onChange={(v) => handleChange("contract_payment_terms", v)}
+              value={formData.invoice_payment_terms}
+              onChange={(v) => handleChange("invoice_payment_terms", v)}
               options={paymentTermData?.data}
               optionKey="paymentTerms"
               optionLabel="paymentTerms"
-              error={errors.contract_payment_terms}
+              error={errors.invoice_payment_terms}
             />
           </div>
           <div className="col-span-2">
             <Label>Remarks</Label>
             <Textarea
-              value={formData.contract_remarks}
-              onChange={(e) => handleChange("contract_remarks", e.target.value)}
+              value={formData.invoice_remarks}
+              onChange={(e) => handleChange("invoice_remarks", e.target.value)}
             />
           </div>
         </div>
@@ -1057,7 +1179,6 @@ const ContractForm = () => {
               <TableHead className="w-[35%]">Item *</TableHead>
               <TableHead className="w-[15%]">Qty *</TableHead>
               <TableHead className="w-[15%]">MRP *</TableHead>
-              {/* <TableHead className="w-[15%]">GST *</TableHead> */}
               <TableHead className="w-[15%]">Batch *</TableHead>
               <TableHead className="w-[15%]">Manufacture *</TableHead>
               <TableHead className="w-[15%]">Expire *</TableHead>
@@ -1071,14 +1192,14 @@ const ContractForm = () => {
                 <TableCell>
                   <SelectField
                     hideLabel
-                    value={row.contractSub_item_id}
+                    value={row.invoiceSub_item_id}
                     onChange={(v) =>
-                      handleSubChange(idx, "contractSub_item_id", v)
+                      handleSubChange(idx, "invoiceSub_item_id", v)
                     }
                     options={itemData?.data || []}
                     optionKey="id"
                     optionLabel="item_brand_name"
-                    error={errors[`subs.${idx}.contractSub_item_id`]}
+                    error={errors[`subs.${idx}.invoiceSub_item_id`]}
                   />
                 </TableCell>
 
@@ -1086,15 +1207,15 @@ const ContractForm = () => {
                 <TableCell>
                   <Field
                     hideLabel
-                    value={row.contractSub_qnty ?? ""}
+                    value={row.invoiceSub_qnty ?? ""}
                     onChange={(v) =>
                       handleSubChange(
                         idx,
-                        "contractSub_qnty",
+                        "invoiceSub_qnty",
                         v.replace(/[^0-9]/g, "")
                       )
                     }
-                    error={errors[`subs.${idx}.contractSub_qnty`]}
+                    error={errors[`subs.${idx}.invoiceSub_qnty`]}
                   />
                 </TableCell>
 
@@ -1102,63 +1223,48 @@ const ContractForm = () => {
                 <TableCell>
                   <Field
                     hideLabel
-                    value={row.contractSub_mrp ?? ""}
+                    value={row.invoiceSub_mrp ?? ""}
                     onChange={(v) =>
                       handleSubChange(
                         idx,
-                        "contractSub_mrp",
+                        "invoiceSub_mrp",
                         v.replace(/[^0-9.]/g, "")
                       )
                     }
-                    error={errors[`subs.${idx}.contractSub_mrp`]}
+                    error={errors[`subs.${idx}.invoiceSub_mrp`]}
                   />
                 </TableCell>
 
-                {/* GST */}
-                {/* <TableCell>
-                  <Field
-                    hideLabel
-                    value={row.contractSub_item_gst ?? ""}
-                    onChange={(v) =>
-                      handleSubChange(
-                        idx,
-                        "contractSub_item_gst",
-                        v.replace(/[^0-9.]/g, "")
-                      )
-                    }
-                    error={errors[`subs.${idx}.contractSub_item_gst`]}
-                  />
-                </TableCell> */}
                 <TableCell>
                   <Field
                     hideLabel
-                    value={row.contractSub_batch_no ?? ""}
+                    value={row.invoiceSub_batch_no ?? ""}
                     onChange={(v) =>
-                      handleSubChange(idx, "contractSub_batch_no", v)
+                      handleSubChange(idx, "invoiceSub_batch_no", v)
                     }
-                    error={errors[`subs.${idx}.contractSub_batch_no`]}
+                    error={errors[`subs.${idx}.invoiceSub_batch_no`]}
                   />
                 </TableCell>
                 <TableCell>
                   <Field
                     hideLabel
                     type="date"
-                    value={row.contractSub_manufacture_date ?? ""}
+                    value={row.invoiceSub_manufacture_date ?? ""}
                     onChange={(v) =>
-                      handleSubChange(idx, "contractSub_manufacture_date", v)
+                      handleSubChange(idx, "invoiceSub_manufacture_date", v)
                     }
-                    error={errors[`subs.${idx}.contractSub_manufacture_date`]}
+                    error={errors[`subs.${idx}.invoiceSub_manufacture_date`]}
                   />
                 </TableCell>
                 <TableCell>
                   <Field
                     hideLabel
                     type="date"
-                    value={row.contractSub_expire_date ?? ""}
+                    value={row.invoiceSub_expire_date ?? ""}
                     onChange={(v) =>
-                      handleSubChange(idx, "contractSub_expire_date", v)
+                      handleSubChange(idx, "invoiceSub_expire_date", v)
                     }
-                    error={errors[`subs.${idx}.contractSub_expire_date`]}
+                    error={errors[`subs.${idx}.invoiceSub_expire_date`]}
                   />
                 </TableCell>
 
@@ -1201,7 +1307,7 @@ const ContractForm = () => {
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the
-              contract.
+              invoice.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1216,4 +1322,4 @@ const ContractForm = () => {
   );
 };
 
-export default ContractForm;
+export default InvoiceForm;

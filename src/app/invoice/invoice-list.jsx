@@ -1,20 +1,18 @@
-// PurchaseList.jsx
-import ApiErrorPage from "@/components/api-error/api-error";
 import {
-  ContractCreate,
-  ContractEdit,
+  InvoiceCreate,
+  InvoiceEdit,
 } from "@/components/buttoncontrol/button-component";
 import DataTable from "@/components/common/data-table";
 import ToggleStatus from "@/components/common/status-toggle";
 import LoadingBar from "@/components/loader/loading-bar";
-import { CONTRACT_API } from "@/constants/apiConstants";
+import { CONTRACT_API, INVOICE_API } from "@/constants/apiConstants";
 import useDebounce from "@/hooks/useDebounce";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 import moment from "moment";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const ContractList = () => {
+const InvoiceList = () => {
   const navigate = useNavigate();
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -31,8 +29,8 @@ const ContractList = () => {
   );
 
   const { data, isLoading, isError, refetch } = useGetApiMutation({
-    url: CONTRACT_API.getlist,
-    queryKey: ["contract-list", pageIndex, debouncedSearch],
+    url: INVOICE_API.getlist,
+    queryKey: ["invoice-list", pageIndex, debouncedSearch],
     params,
   });
   const apiData = data;
@@ -40,24 +38,24 @@ const ContractList = () => {
   const columns = [
     {
       header: "Date",
-      accessorKey: "contract_date",
+      accessorKey: "invoice_date",
       cell: ({ row }) => {
-        const date = row.original.contract_date;
+        const date = row.original.invoice_date;
         return date ? moment(date).format("DD MMM YYYY") : "";
       },
     },
     { header: "Company", accessorKey: "branch_short" },
-    { header: "Contract No", accessorKey: "contract_no" },
-    { header: "Buyer Name", accessorKey: "contract_buyer" },
-    { header: "Consignee Name", accessorKey: "contract_consignee" },
+    { header: "Invoice No", accessorKey: "invoice_no" },
+    { header: "Buyer Name", accessorKey: "invoice_buyer" },
+    { header: "Consignee Name", accessorKey: "invoice_consignee" },
     {
       header: "Status",
-      accessorKey: "contract_status",
+      accessorKey: "invoice_status",
       cell: ({ row }) => (
         <ToggleStatus
-          initialStatus={row.original.contract_status}
-          apiUrl={CONTRACT_API.updateStatus(row.original.id)}
-          payloadKey="contract_status"
+          initialStatus={row.original.invoice_status}
+          apiUrl={INVOICE_API.updateStatus(row.original.id)}
+          payloadKey="invoice_status"
           onSuccess={refetch}
           activeValue="Open"
           inactiveValue="Close"
@@ -67,8 +65,8 @@ const ContractList = () => {
     {
       header: "Actions",
       cell: ({ row }) => (
-        <ContractEdit
-          onClick={() => navigate(`/contract/edit/${row.original.id}`)}
+        <InvoiceEdit
+          onClick={() => navigate(`/invoice/edit/${row.original.id}`)}
         />
       ),
     },
@@ -83,9 +81,9 @@ const ContractList = () => {
         data={apiData?.data?.data || []}
         columns={columns}
         pageSize={pageSize}
-        searchPlaceholder="Search contract..."
+        searchPlaceholder="Search invoice..."
         toolbarRight={
-          <ContractCreate onClick={() => navigate("/contract/create")} />
+          <InvoiceCreate onClick={() => navigate("/invoice/create")} />
         }
         serverPagination={{
           pageIndex,
@@ -100,4 +98,4 @@ const ContractList = () => {
   );
 };
 
-export default ContractList;
+export default InvoiceList;
