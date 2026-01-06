@@ -132,6 +132,11 @@ const NAVIGATION_CONFIG = [
         icon: Users,
       },
       {
+        title: "CartonBox",
+        url: "/master/cartonbox",
+        icon: Users,
+      },
+      {
         title: "Purchase",
         url: "/master/purchase",
         icon: Users,

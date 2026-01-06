@@ -10,6 +10,8 @@ const Field = ({
   required,
   hideLabel,
   disabled,
+  className,
+  readOnly,
 }) => (
   <div>
     {!hideLabel && <Label>{label}</Label>}
@@ -18,6 +20,8 @@ const Field = ({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
+      className={className}
+      readOnly={readOnly}
     />
     {error && <p className="text-xs text-red-500">{error}</p>}
   </div>
