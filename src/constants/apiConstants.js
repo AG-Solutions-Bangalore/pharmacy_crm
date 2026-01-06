@@ -201,6 +201,7 @@ export const VENDOR_API = {
 export const PURCHASE_API = {
   getlist: "/purchase",
   create: "/purchase",
+  active: "/activePurchaseItems",
   getById: (id) => `/purchase/${id}`,
   updateById: (id) => `/purchase/${id}`,
   updateStatus: (id) => `/purchases/${id}/status`,
@@ -221,10 +222,20 @@ export const CONTRACT_API = {
 export const INVOICE_API = {
   getlist: "/invoice",
   create: "/invoice",
+  status: "/panel-fetch-invoice-status",
   geInvoiceNo: "/getInvoiceNo",
   checkInvoiceRef: "/checkInvoiceRef",
   getById: (id) => `/invoice/${id}`,
+  documentgetById: (id) => `/getInvoiceDocumentById/${id}`,
+  documentupdateById: (id) => `/updateInvoiceDocument/${id}`,
   updateById: (id) => `/invoice/${id}`,
   updateStatus: (id) => `/invoices/${id}/status`,
   deleteSubs: (id) => `/deleteinvoiceSub/${id}`,
+};
+export const CARTONBOX_API = {
+  getlist: "/cartonbox",
+  create: "/cartonbox",
+  getById: (id) => `/cartonbox/${id}`,
+  updateById: (id) => `/cartonbox/${id}`,
+  updateStatus: (id) => `/cartonboxs/${id}/status`,
 };

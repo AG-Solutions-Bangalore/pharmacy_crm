@@ -7,6 +7,7 @@ import {
   COUNTRY_API,
   COUNTRYPORT_API,
   GRCODE_API,
+  INVOICE_API,
   ITEMS_API,
   MARKING_API,
   PAYMENTTERM_API,
@@ -14,9 +15,12 @@ import {
   PRECARRIAGES_API,
   PRERECEIPTS_API,
   PRODUCT_API,
+  PURCHASE_API,
   SCHEME_API,
+  SHIPPER_API,
   STATE_API,
   VENDOR_API,
+  VESSEL_API,
   YEAR,
 } from "@/constants/apiConstants";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
@@ -78,6 +82,22 @@ const MASTER_APIS = {
   bank: {
     url: BANK_API.active,
     queryKey: ["bank-ref"],
+  },
+  invoicestatus: {
+    url: INVOICE_API.status,
+    queryKey: ["invoice-status"],
+  },
+  shipper: {
+    url: SHIPPER_API.active,
+    queryKey: ["shipper-active"],
+  },
+  vessel: {
+    url: VESSEL_API.active,
+    queryKey: ["vessel-active"],
+  },
+  purchaseitem: {
+    url: PURCHASE_API.active,
+    queryKey: ["purchaseitem-active"],
   },
 
   year: {

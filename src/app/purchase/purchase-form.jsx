@@ -1,4 +1,3 @@
-// PurchaseForm.jsx
 import ApiErrorPage from "@/components/api-error/api-error";
 import PageHeader from "@/components/common/page-header";
 import LoadingBar from "@/components/loader/loading-bar";
@@ -9,10 +8,17 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { PURCHASE_API } from "@/constants/apiConstants";
 import { toast } from "sonner";
-
 import { useApiMutation } from "@/hooks/useApiMutation";
 import useMasterQueries from "@/hooks/useMasterQueries";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import SelectField from "@/components/SelectField/SelectField";
 import Field from "@/components/SelectField/Field";
 import { Textarea } from "@/components/ui/textarea";
@@ -221,7 +227,6 @@ const PurchaseForm = () => {
 
       toast.success("Sub item deleted successfully");
 
-      // Remove from local state
       setFormData((p) => ({
         ...p,
         subs: p.subs.filter((_, i) => i !== subToDelete.index),
@@ -277,206 +282,256 @@ const PurchaseForm = () => {
       />
 
       <Card className="p-4 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <SelectField
-            label="Branch "
-            required
-            value={formData.branch_short}
-            onChange={(v) => handleChange("branch_short", v)}
-            options={branch.data?.data}
-            optionKey="branch_short"
-            optionLabel="branch_short"
-            error={errors.branch_short}
-          />
+        <Tabs defaultValue="form" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="form">Purchase Details</TabsTrigger>
+            <TabsTrigger value="items">Items</TabsTrigger>
+          </TabsList>
 
-          <Field
-            label="Date *"
-            type="date"
-            value={formData.purchase_date}
-            onChange={(v) => handleChange("purchase_date", v)}
-            error={errors.purchase_date}
-          />
+          {/* ================= FORM TAB ================= */}
+          <TabsContent value="form" className="pt-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <SelectField
+                label="Branch "
+                required
+                value={formData.branch_short}
+                onChange={(v) => handleChange("branch_short", v)}
+                options={branch.data?.data}
+                optionKey="branch_short"
+                optionLabel="branch_short"
+                error={errors.branch_short}
+              />
 
-          <SelectField
-            label="Vendor "
-            required
-            value={String(formData.purchase_vendor_id)}
-            onChange={(v) => handleChange("purchase_vendor_id", v)}
-            options={vendor.data?.data}
-            optionKey="id"
-            optionLabel="vendor_name"
-            error={errors.purchase_vendor_id}
-          />
+              <Field
+                label="Date *"
+                type="date"
+                value={formData.purchase_date}
+                onChange={(v) => handleChange("purchase_date", v)}
+                error={errors.purchase_date}
+              />
 
-          <Field
-            label="Bill Ref"
-            value={formData.purchase_bill_ref}
-            onChange={(v) => handleChange("purchase_bill_ref", v)}
-          />
-          {/* REMARKS */}
-          <div className={`${isEdit ? "col-span-3" : "col-span-4"} space-y-1`}>
-            <Label className="text-sm font-medium">Remarks</Label>
+              <SelectField
+                label="Vendor "
+                required
+                value={String(formData.purchase_vendor_id)}
+                onChange={(v) => handleChange("purchase_vendor_id", v)}
+                options={vendor.data?.data}
+                optionKey="id"
+                optionLabel="vendor_name"
+                error={errors.purchase_vendor_id}
+              />
 
-            <Textarea
-              name="purchase_remarks"
-              value={formData.purchase_remarks}
-              onChange={(e) => handleChange("purchase_remarks", e.target.value)}
-              placeholder="Enter remarks"
-            />
-
-            {errors.purchase_remarks && (
-              <p className="text-xs text-red-500">{errors.purchase_remarks}</p>
-            )}
-          </div>
-
-          {isEdit && (
-            <div className="col-span-1 space-y-1">
-              <Label className="text-sm font-medium">Status</Label>
-
-              <Select
-                value={formData.purchase_status}
-                onValueChange={(v) => handleChange("purchase_status", v)}
+              <Field
+                label="Bill Ref"
+                value={formData.purchase_bill_ref}
+                onChange={(v) => handleChange("purchase_bill_ref", v)}
+              />
+              {/* REMARKS */}
+              <div
+                className={`${isEdit ? "col-span-3" : "col-span-4"} space-y-1`}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
+                <Label className="text-sm font-medium">Remarks</Label>
 
-                <SelectContent>
-                  <SelectItem value="Active">
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 rounded-full bg-green-500 mr-2" />
-                      Active
-                    </div>
-                  </SelectItem>
+                <Textarea
+                  name="purchase_remarks"
+                  value={formData.purchase_remarks}
+                  onChange={(e) =>
+                    handleChange("purchase_remarks", e.target.value)
+                  }
+                  placeholder="Enter remarks"
+                />
 
-                  <SelectItem value="Inactive">
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 rounded-full bg-gray-400 mr-2" />
-                      Inactive
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+                {errors.purchase_remarks && (
+                  <p className="text-xs text-red-500">
+                    {errors.purchase_remarks}
+                  </p>
+                )}
+              </div>
 
-              {errors.purchase_status && (
-                <p className="text-xs text-red-500">{errors.purchase_status}</p>
+              {isEdit && (
+                <div className="col-span-1 space-y-1">
+                  <Label className="text-sm font-medium">Status</Label>
+
+                  <Select
+                    value={formData.purchase_status}
+                    onValueChange={(v) => handleChange("purchase_status", v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      <SelectItem value="Active">
+                        <div className="flex items-center">
+                          <div className="w-2 h-2 rounded-full bg-green-500 mr-2" />
+                          Active
+                        </div>
+                      </SelectItem>
+
+                      <SelectItem value="Inactive">
+                        <div className="flex items-center">
+                          <div className="w-2 h-2 rounded-full bg-gray-400 mr-2" />
+                          Inactive
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {errors.purchase_status && (
+                    <p className="text-xs text-red-500">
+                      {errors.purchase_status}
+                    </p>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
+          </TabsContent>
+          <TabsContent value="items" className="pt-4 space-y-4">
+            <Card className="p-0 overflow-hidden rounded-sm">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[220px]">Item *</TableHead>
+                    <TableHead>Batch *</TableHead>
+                    <TableHead>MFG *</TableHead>
+                    <TableHead>EXP *</TableHead>
+                    <TableHead className="w-[100px]">Qty *</TableHead>
+                    <TableHead className="w-[100px]">Rate *</TableHead>
+                    <TableHead className="w-[100px]">MRP *</TableHead>
+                    <TableHead className="w-[60px] text-center">
+                      Action
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
 
-        <div className="space-y-2">
-          <div className="border rounded-lg space-y-2 bg-muted/30">
-            <div className="hidden md:grid grid-cols-8 gap-2 p-2 bg-muted sticky top-0 z-10 rounded-md text-xs font-semibold">
-              <div className="col-span-2">Item *</div>
-              <div>Batch *</div>
-              <div>MFG *</div>
-              <div>EXP *</div>
-              <div>Qty *</div>
-              <div>Rate *</div>
-              <div>MRP *</div>
-            </div>
+                <TableBody>
+                  {formData.subs.map((sub, i) => (
+                    <TableRow key={i}>
+                      {/* ITEM */}
+                      <TableCell>
+                        <SelectField
+                          hideLabel
+                          value={String(sub.purchaseSub_item_id)}
+                          onChange={(v) =>
+                            handleSubChange(i, "purchaseSub_item_id", v)
+                          }
+                          options={item.data?.data}
+                          optionKey="id"
+                          optionLabel="item_brand_name"
+                          error={errors[`sub_${i}_purchaseSub_item_id`]}
+                        />
+                      </TableCell>
 
-            {/* ROWS */}
-            {formData.subs.map((sub, i) => (
-              <div
-                key={i}
-                className="relative grid grid-cols-1 md:grid-cols-8 gap-2 bg-background p-2 rounded-md"
-              >
-                {formData.subs.length > 1 && (
-                  <button
-                    type="button"
-                    className={`absolute -top-2 -right-2 rounded-full p-1 ${
-                      sub.id
-                        ? "bg-red-600 text-white"
-                        : "bg-gray-400 text-white"
-                    }`}
-                    onClick={() => {
-                      if (sub.id) {
-                        // open dialog for existing sub
-                        setSubToDelete({ index: i, id: sub.id });
-                        setDeleteConfirmOpen(true);
-                      } else {
-                        // remove new sub immediately
-                        removeSub(i);
-                      }
-                    }}
-                  >
-                    {sub.id ? <Trash2 size={14} /> : <X size={12} />}
-                  </button>
-                )}
+                      {/* BATCH */}
+                      <TableCell>
+                        <Field
+                          hideLabel
+                          value={sub.purchaseSub_batch_no}
+                          onChange={(v) =>
+                            handleSubChange(i, "purchaseSub_batch_no", v)
+                          }
+                          error={errors[`sub_${i}_purchaseSub_batch_no`]}
+                        />
+                      </TableCell>
 
-                <div className="md:col-span-2">
-                  <SelectField
-                    hideLabel
-                    value={String(sub.purchaseSub_item_id)}
-                    onChange={(v) =>
-                      handleSubChange(i, "purchaseSub_item_id", v)
-                    }
-                    options={item.data?.data}
-                    optionKey="id"
-                    optionLabel="item_brand_name"
-                    error={errors[`sub_${i}_purchaseSub_item_id`]}
-                  />
-                </div>
+                      {/* MFG */}
+                      <TableCell>
+                        <Field
+                          hideLabel
+                          type="date"
+                          value={sub.purchaseSub_manufacture_date}
+                          onChange={(v) =>
+                            handleSubChange(
+                              i,
+                              "purchaseSub_manufacture_date",
+                              v
+                            )
+                          }
+                          error={
+                            errors[`sub_${i}_purchaseSub_manufacture_date`]
+                          }
+                        />
+                      </TableCell>
 
-                <Field
-                  hideLabel
-                  value={sub.purchaseSub_batch_no}
-                  onChange={(v) =>
-                    handleSubChange(i, "purchaseSub_batch_no", v)
-                  }
-                  error={errors[`sub_${i}_purchaseSub_batch_no`]}
-                />
+                      {/* EXP */}
+                      <TableCell>
+                        <Field
+                          hideLabel
+                          type="date"
+                          value={sub.purchaseSub_expire_date}
+                          onChange={(v) =>
+                            handleSubChange(i, "purchaseSub_expire_date", v)
+                          }
+                          error={errors[`sub_${i}_purchaseSub_expire_date`]}
+                        />
+                      </TableCell>
 
-                <Field
-                  hideLabel
-                  type="date"
-                  value={sub.purchaseSub_manufacture_date}
-                  onChange={(v) =>
-                    handleSubChange(i, "purchaseSub_manufacture_date", v)
-                  }
-                  error={errors[`sub_${i}_purchaseSub_manufacture_date`]}
-                />
+                      {/* QTY */}
+                      <TableCell>
+                        <Field
+                          hideLabel
+                          value={sub.purchaseSub_qnty}
+                          onChange={(v) =>
+                            handleSubChange(i, "purchaseSub_qnty", v)
+                          }
+                          error={errors[`sub_${i}_purchaseSub_qnty`]}
+                        />
+                      </TableCell>
 
-                <Field
-                  hideLabel
-                  type="date"
-                  value={sub.purchaseSub_expire_date}
-                  onChange={(v) =>
-                    handleSubChange(i, "purchaseSub_expire_date", v)
-                  }
-                  error={errors[`sub_${i}_purchaseSub_expire_date`]}
-                />
+                      {/* RATE */}
+                      <TableCell>
+                        <Field
+                          hideLabel
+                          value={sub.purchaseSub_rate}
+                          onChange={(v) =>
+                            handleSubChange(i, "purchaseSub_rate", v)
+                          }
+                          error={errors[`sub_${i}_purchaseSub_rate`]}
+                        />
+                      </TableCell>
 
-                <Field
-                  hideLabel
-                  value={sub.purchaseSub_qnty}
-                  onChange={(v) => handleSubChange(i, "purchaseSub_qnty", v)}
-                  error={errors[`sub_${i}_purchaseSub_qnty`]}
-                />
+                      {/* MRP */}
+                      <TableCell>
+                        <Field
+                          hideLabel
+                          value={sub.purchaseSub_mrp}
+                          onChange={(v) =>
+                            handleSubChange(i, "purchaseSub_mrp", v)
+                          }
+                          error={errors[`sub_${i}_purchaseSub_mrp`]}
+                        />
+                      </TableCell>
 
-                <Field
-                  hideLabel
-                  value={sub.purchaseSub_rate}
-                  onChange={(v) => handleSubChange(i, "purchaseSub_rate", v)}
-                  error={errors[`sub_${i}_purchaseSub_rate`]}
-                />
+                      {/* ACTION */}
+                      <TableCell className="text-center">
+                        {formData.subs.length > 1 && (
+                          <Button
+                            size="icon"
+                            variant={sub.id ? "destructive" : "secondary"}
+                            onClick={() => {
+                              if (sub.id) {
+                                setSubToDelete({ index: i, id: sub.id });
+                                setDeleteConfirmOpen(true);
+                              } else {
+                                removeSub(i);
+                              }
+                            }}
+                          >
+                            {sub.id ? <Trash2 size={16} /> : <X size={14} />}
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
 
-                <Field
-                  hideLabel
-                  value={sub.purchaseSub_mrp}
-                  onChange={(v) => handleSubChange(i, "purchaseSub_mrp", v)}
-                  error={errors[`sub_${i}_purchaseSub_mrp`]}
-                />
-              </div>
-            ))}
-          </div>
-
-          <Button variant="outline" className="w-fit" onClick={addSub}>
-            + Add Item
-          </Button>
-        </div>
+            <Button variant="outline" onClick={addSub} className="w-fit">
+              + Add Item
+            </Button>
+          </TabsContent>
+        </Tabs>
       </Card>
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent>

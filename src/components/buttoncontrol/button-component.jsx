@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Edit, SquarePlus } from "lucide-react";
+import { Edit, FilePlus2, SquarePlus } from "lucide-react";
 import { forwardRef } from "react";
 import { useSelector } from "react-redux";
 import { checkPermission } from "./permisssion";
@@ -1070,6 +1070,77 @@ export const InvoiceEdit = forwardRef(({ onClick, className }, ref) => {
 });
 
 InvoiceEdit.page = "Invoice";
+/////// MASTER – Invoice
+export const InvoiceDocument = forwardRef(({ onClick, className }, ref) => {
+  const userId = useSelector((state) => state.auth.user?.id);
+  const buttonPermissions = useSelector(
+    (state) => state.permissions.buttonPermissions
+  );
+
+  if (!checkPermission(String(userId), "InvoiceDocument", buttonPermissions)) {
+    return null;
+  }
+
+  return (
+    <Button
+      ref={ref}
+      onClick={onClick}
+      className={className}
+      variant="ghost"
+      size="icon"
+    >
+      <FilePlus2 className="h-4 w-4 text-black" />
+    </Button>
+  );
+});
+
+InvoiceDocument.page = "Invoice";
+/////// MASTER – CartonBox
+export const CartonBoxCreate = forwardRef(({ onClick, className }, ref) => {
+  const userId = useSelector((state) => state.auth.user?.id);
+  const buttonPermissions = useSelector(
+    (state) => state.permissions.buttonPermissions
+  );
+
+  if (!checkPermission(String(userId), "CartonBoxCreate", buttonPermissions)) {
+    return null;
+  }
+
+  return (
+    <Button ref={ref} variant="default" className={className} onClick={onClick}>
+      <SquarePlus className="h-4 w-4 mr-2" />
+      CartonBox
+    </Button>
+  );
+});
+
+CartonBoxCreate.page = "CartonBox";
+
+/////// MASTER – CartonBoxEdit
+export const CartonBoxEdit = forwardRef(({ onClick, className }, ref) => {
+  const userId = useSelector((state) => state.auth.user?.id);
+  const buttonPermissions = useSelector(
+    (state) => state.permissions.buttonPermissions
+  );
+
+  if (!checkPermission(String(userId), "CartonBoxEdit", buttonPermissions)) {
+    return null;
+  }
+
+  return (
+    <Button
+      ref={ref}
+      onClick={onClick}
+      className={className}
+      variant="ghost"
+      size="icon"
+    >
+      <Edit className="h-4 w-4 text-black" />
+    </Button>
+  );
+});
+
+CartonBoxEdit.page = "CartonBox";
 export default {
   BuyerCreate,
   EditBuyer,
@@ -1117,4 +1188,7 @@ export default {
   ContractEdit,
   InvoiceCreate,
   InvoiceEdit,
+  InvoiceDocument,
+  CartonBoxCreate,
+  CartonBoxEdit,
 };

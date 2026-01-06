@@ -1,13 +1,17 @@
 import {
   InvoiceCreate,
+  InvoiceDocument,
   InvoiceEdit,
 } from "@/components/buttoncontrol/button-component";
 import DataTable from "@/components/common/data-table";
 import ToggleStatus from "@/components/common/status-toggle";
+import StatusSelect from "@/components/status-select/StatusSelect";
+import InvoiceStatusSelect from "@/components/status-select/StatusSelect";
 import LoadingBar from "@/components/loader/loading-bar";
-import { CONTRACT_API, INVOICE_API } from "@/constants/apiConstants";
+import { INVOICE_API } from "@/constants/apiConstants";
 import useDebounce from "@/hooks/useDebounce";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
+import useMasterQueries from "@/hooks/useMasterQueries";
 import moment from "moment";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +22,13 @@ const InvoiceList = () => {
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search);
-
+  const master = useMasterQueries(["invoicestatus"]);
+  const {
+    data: invoiceStatusData,
+    loading: loadinginvoicestatus,
+    error: invoicestatusError,
+    refetch: refetchinvoicestatus,
+  } = master.invoicestatus;
   const params = useMemo(
     () => ({
       page: pageIndex + 1,
@@ -52,28 +62,34 @@ const InvoiceList = () => {
       header: "Status",
       accessorKey: "invoice_status",
       cell: ({ row }) => (
-        <ToggleStatus
+        <StatusSelect
           initialStatus={row.original.invoice_status}
           apiUrl={INVOICE_API.updateStatus(row.original.id)}
           payloadKey="invoice_status"
+          options={invoiceStatusData?.data || []}
           onSuccess={refetch}
-          activeValue="Open"
-          inactiveValue="Close"
+          valueKey="invoice_status"
+          labelKey="invoice_status"
         />
       ),
     },
     {
       header: "Actions",
       cell: ({ row }) => (
-        <InvoiceEdit
-          onClick={() => navigate(`/invoice/edit/${row.original.id}`)}
-        />
+        <>
+          <InvoiceEdit
+            onClick={() => navigate(`/invoice/edit/${row.original.id}`)}
+          />
+          <InvoiceDocument
+            onClick={() => navigate(`/invoicedocument/edit/${row.original.id}`)}
+          />
+        </>
       ),
     },
   ];
 
   if (isError) return <ApiErrorPage onRetry={refetch} />;
-
+  console.log(apiData, "apiData");
   return (
     <>
       {isLoading && <LoadingBar />}
@@ -87,8 +103,8 @@ const InvoiceList = () => {
         }
         serverPagination={{
           pageIndex,
-          pageCount: apiData?.last_page ?? 1,
-          total: apiData?.total ?? 0,
+          pageCount: apiData?.data?.last_page ?? 1,
+          total: apiData?.data?.total ?? 0,
           onPageChange: setPageIndex,
           onPageSizeChange: setPageSize,
           onSearch: setSearch,

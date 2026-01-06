@@ -41,6 +41,7 @@ import moment from "moment";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const EMPTY_SUB = {
   id: "",
@@ -149,6 +150,7 @@ const InvoiceForm = () => {
     "scheme",
     "contractref",
     "bank",
+    "invoicestatus",
   ]);
 
   const {
@@ -246,12 +248,11 @@ const InvoiceForm = () => {
     refetch: refetchcontractref,
   } = master.contractref;
   const {
-    data: BankData,
-    loading: loadingbank,
-    error: bankError,
-    refetch: refetchbank,
-  } = master.bank;
-
+    data: invoiceStatusData,
+    loading: loadinginvoicestatus,
+    error: invoicestatusError,
+    refetch: refetchinvoicestatus,
+  } = master.invoicestatus;
   useEffect(() => {
     if (!isEdit || !id) return;
 
@@ -654,7 +655,7 @@ const InvoiceForm = () => {
           "Expire Date is required";
       }
     });
-    console.log(newErrors)
+    console.log(newErrors);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -785,7 +786,9 @@ const InvoiceForm = () => {
     grcodeError ||
     schemeError ||
     precarriageError ||
-    prereceiptError
+    prereceiptError ||
+    contractrefError ||
+    invoicestatusError
   ) {
     return (
       <ApiErrorPage
@@ -804,6 +807,8 @@ const InvoiceForm = () => {
           refetchscheme();
           refetchprereceipt();
           refetchprecarriage();
+          refetchcontractref();
+          refetchinvoicestatus();
         }}
       />
     );
@@ -826,7 +831,9 @@ const InvoiceForm = () => {
     loadinggrcode ||
     loadingscheme ||
     loadingprereceipt ||
-    loadingprecarriage;
+    loadingprecarriage ||
+    loadingcontractref ||
+    loadinginvoicestatus;
   return (
     <>
       {isLoading && <LoadingBar />}
@@ -841,465 +848,525 @@ const InvoiceForm = () => {
           </Button>
         }
       />
-
       <Card className="p-4 space-y-6">
-        <div className="mb-0">
-          <div className="grid md:grid-cols-4 gap-4">
-            <SelectField
-              label="Contract Ref"
-              required
-              value={formData.contract_ref}
-              onChange={(v) => handleSelectChange("contract_ref", v)}
-              options={ContractrefData?.data}
-              optionKey="contract_ref"
-              optionLabel="contract_ref"
-              error={errors.contract_ref}
-            />
+        <Tabs defaultValue="form" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="form">Invoice Details</TabsTrigger>
+            <TabsTrigger value="items">Items</TabsTrigger>
+          </TabsList>
+          <TabsContent value="form" className="pt-4">
+            <Card className="p-4 space-y-6">
+              <div className="mb-0">
+                <div className="grid md:grid-cols-4 gap-4">
+                  <SelectField
+                    label="Contract Ref"
+                    required
+                    value={formData.contract_ref}
+                    onChange={(v) => handleSelectChange("contract_ref", v)}
+                    options={ContractrefData?.data}
+                    optionKey="contract_ref"
+                    optionLabel="contract_ref"
+                    error={errors.contract_ref}
+                  />
 
-            <SelectField
-              label="Buyer"
-              required
-              value={formData.invoice_buyer}
-              onChange={(v) => handleSelectChange("invoice_buyer", v)}
-              options={buyerData?.data}
-              optionKey="buyer_name"
-              optionLabel="buyer_name"
-              error={errors.invoice_buyer}
-            />
+                  <SelectField
+                    label="Buyer"
+                    required
+                    value={formData.invoice_buyer}
+                    onChange={(v) => handleSelectChange("invoice_buyer", v)}
+                    options={buyerData?.data}
+                    optionKey="buyer_name"
+                    optionLabel="buyer_name"
+                    error={errors.invoice_buyer}
+                  />
 
-            <SelectField
-              label="Consignee"
-              required
-              value={formData.invoice_consignee}
-              onChange={(v) => handleSelectChange("invoice_consignee", v)}
-              options={buyerData?.data}
-              optionKey="buyer_name"
-              optionLabel="buyer_name"
-              error={errors.invoice_consignee}
-            />
-            <SelectField
-              label="Bank"
-              value={formData.invoice_consig_bank}
-              onChange={(v) => handleSelectChange("invoice_consig_bank", v)}
-              options={buyerData?.data}
-              optionKey="buyer_name"
-              optionLabel="buyer_name"
-            />
-            <SelectField
-              label="Company"
-              required
-              value={formData.branch_short}
-              onChange={(v) => handleSelectChange("branch_short", v)}
-              options={branchData?.data}
-              optionKey="branch_short"
-              optionLabel="branch_short"
-              error={errors.branch_short}
-            />
-            <Textarea
-              value={formData.invoice_buyer_add || ""}
-              className="text-[9px] bg-white"
-              onChange={(e) =>
-                handleChange("invoice_buyer_add", e.target.value)
-              }
-            />
+                  <SelectField
+                    label="Consignee"
+                    required
+                    value={formData.invoice_consignee}
+                    onChange={(v) => handleSelectChange("invoice_consignee", v)}
+                    options={buyerData?.data}
+                    optionKey="buyer_name"
+                    optionLabel="buyer_name"
+                    error={errors.invoice_consignee}
+                  />
+                  <SelectField
+                    label="Bank"
+                    value={formData.invoice_consig_bank}
+                    onChange={(v) =>
+                      handleSelectChange("invoice_consig_bank", v)
+                    }
+                    options={buyerData?.data}
+                    optionKey="buyer_name"
+                    optionLabel="buyer_name"
+                  />
+                  <SelectField
+                    label="Company"
+                    required
+                    value={formData.branch_short}
+                    onChange={(v) => handleSelectChange("branch_short", v)}
+                    options={branchData?.data}
+                    optionKey="branch_short"
+                    optionLabel="branch_short"
+                    error={errors.branch_short}
+                  />
+                  <Textarea
+                    value={formData.invoice_buyer_add || ""}
+                    className="text-[9px] bg-white"
+                    onChange={(e) =>
+                      handleChange("invoice_buyer_add", e.target.value)
+                    }
+                  />
 
-            <Textarea
-              value={formData.invoice_consignee_add || ""}
-              className="text-[9px] bg-white"
-              onChange={(e) =>
-                handleChange("invoice_consignee_add", e.target.value)
-              }
-            />
-            <Textarea
-              value={formData.invoice_consig_bank_address || ""}
-              className="text-[9px] bg-white"
-              onChange={(e) =>
-                handleChange("invoice_consig_bank_address", e.target.value)
-              }
-            />
-          </div>
-        </div>
-        <div className="mt-[2px]">
-          <div className="grid md:grid-cols-4 gap-4">
-            <Field
-              label="Invoice Ref *"
-              value={formData.invoice_ref}
-              disabled
-              error={errors.invoice_ref}
-            />
-            {!isEdit ? (
-              <SelectField
-                label="Invoice No "
-                required
-                value={formData.invoice_no}
-                onChange={(v) => handleSelectChange("invoice_no", v)}
-                options={invoiceNoOptions}
-                optionKey="invoice_no"
-                optionLabel="invoice_no"
-                error={errors.invoice_no}
-              />
-            ) : (
-              <Field label="Invoice No" value={formData.invoice_no} disabled />
-            )}
-            <Field
-              label="Invoice Date *"
-              type="date"
-              value={formData.invoice_date}
-              onChange={(v) => handleChange("invoice_date", v)}
-              error={errors.invoice_date}
-            />
-            <Field
-              label="Contract Date *"
-              type="date"
-              value={formData.contract_date}
-              onChange={(v) => handleChange("contract_date", v)}
-              error={errors.contract_date}
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <Field
-            label="Contract Ref *"
-            value={formData.contract_ref}
-            disabled
-            error={errors.contract_ref}
-          />
-          <Field
-            label="Contract Pono *"
-            value={formData.contract_pono}
-            onChange={(v) => handleChange("contract_pono", v)}
-            error={errors.contract_pono}
-          />
-          <SelectField
-            label="Product"
-            required
-            value={formData.invoice_product}
-            onChange={(v) => handleChange("invoice_product", v)}
-            options={productData?.data}
-            optionKey="product_name"
-            optionLabel="product_name"
-            error={errors.invoice_product}
-          />
+                  <Textarea
+                    value={formData.invoice_consignee_add || ""}
+                    className="text-[9px] bg-white"
+                    onChange={(e) =>
+                      handleChange("invoice_consignee_add", e.target.value)
+                    }
+                  />
+                  <Textarea
+                    value={formData.invoice_consig_bank_address || ""}
+                    className="text-[9px] bg-white"
+                    onChange={(e) =>
+                      handleChange(
+                        "invoice_consig_bank_address",
+                        e.target.value
+                      )
+                    }
+                  />
+                </div>
+              </div>
+              <div className="mt-[2px]">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  {!isEdit ? (
+                    <SelectField
+                      label="Invoice No "
+                      required
+                      value={formData.invoice_no}
+                      onChange={(v) => handleSelectChange("invoice_no", v)}
+                      options={invoiceNoOptions}
+                      optionKey="invoice_no"
+                      optionLabel="invoice_no"
+                      error={errors.invoice_no}
+                    />
+                  ) : (
+                    <Field
+                      label="Invoice No"
+                      value={formData.invoice_no}
+                      disabled
+                    />
+                  )}
+                  <Field
+                    label="Invoice Ref *"
+                    value={formData.invoice_ref}
+                    disabled
+                    error={errors.invoice_ref}
+                  />
+                  <Field
+                    label="Invoice Date *"
+                    type="date"
+                    value={formData.invoice_date}
+                    onChange={(v) => handleChange("invoice_date", v)}
+                    error={errors.invoice_date}
+                  />
+                  <Field
+                    label="Contract Date *"
+                    type="date"
+                    value={formData.contract_date}
+                    onChange={(v) => handleChange("contract_date", v)}
+                    error={errors.contract_date}
+                    disabled
+                  />
+                  <Field
+                    label="Contract Ref *"
+                    value={formData.contract_ref}
+                    disabled
+                    error={errors.contract_ref}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <Field
+                  label="Contract Pono *"
+                  value={formData.contract_pono}
+                  onChange={(v) => handleChange("contract_pono", v)}
+                  error={errors.contract_pono}
+                />
+                <SelectField
+                  label="Product"
+                  required
+                  value={formData.invoice_product}
+                  onChange={(v) => handleChange("invoice_product", v)}
+                  options={productData?.data}
+                  optionKey="product_name"
+                  optionLabel="product_name"
+                  error={errors.invoice_product}
+                />
 
-          <SelectField
-            label="Port of Loading"
-            required
-            value={formData.invoice_loading}
-            onChange={(v) => handleChange("invoice_loading", v)}
-            options={portData?.data}
-            optionKey="portofLoading"
-            optionLabel="portofLoading"
-            error={errors.invoice_loading}
-          />
+                <SelectField
+                  label="Port of Loading"
+                  required
+                  value={formData.invoice_loading}
+                  onChange={(v) => handleChange("invoice_loading", v)}
+                  options={portData?.data}
+                  optionKey="portofLoading"
+                  optionLabel="portofLoading"
+                  error={errors.invoice_loading}
+                />
 
-          <SelectField
-            label="Destination Port"
-            required
-            value={formData.invoice_destination_port}
-            onChange={(v) => handleSelectChange("invoice_destination_port", v)}
-            options={countryPortData?.data}
-            optionKey="country_port"
-            optionLabel="country_port"
-            error={errors.invoice_destination_port}
-          />
-        </div>
+                <SelectField
+                  label="Destination Port"
+                  required
+                  value={formData.invoice_destination_port}
+                  onChange={(v) =>
+                    handleSelectChange("invoice_destination_port", v)
+                  }
+                  options={countryPortData?.data}
+                  optionKey="country_port"
+                  optionLabel="country_port"
+                  error={errors.invoice_destination_port}
+                />
+                {/* </div>
 
-        {/* ================= SHIPPING / FINANCE ================= */}
-        <div className="grid grid-cols-1  md:grid-cols-6 gap-4">
-          <SelectField
-            label="Port of Discharge"
-            required
-            value={formData.invoice_discharge}
-            onChange={(v) => handleSelectChange("invoice_discharge", v)}
-            options={countryPortData?.data}
-            optionKey="country_port"
-            optionLabel="country_port"
-            error={errors.invoice_discharge}
-          />
+        <div className="grid grid-cols-1  md:grid-cols-5 gap-4"> */}
+                <SelectField
+                  label="Port of Discharge"
+                  required
+                  value={formData.invoice_discharge}
+                  onChange={(v) => handleSelectChange("invoice_discharge", v)}
+                  options={countryPortData?.data}
+                  optionKey="country_port"
+                  optionLabel="country_port"
+                  error={errors.invoice_discharge}
+                />
 
-          <SelectField
-            label="CIF"
-            required
-            value={formData.invoice_cif}
-            onChange={(v) => handleSelectChange("invoice_cif", v)}
-            options={countryPortData?.data}
-            optionKey="country_port"
-            optionLabel="country_port"
-            error={errors.invoice_cif}
-          />
+                <SelectField
+                  label="CIF"
+                  required
+                  value={formData.invoice_cif}
+                  onChange={(v) => handleSelectChange("invoice_cif", v)}
+                  options={countryPortData?.data}
+                  optionKey="country_port"
+                  optionLabel="country_port"
+                  error={errors.invoice_cif}
+                />
 
-          <SelectField
-            label="Dest Country"
-            required
-            value={formData.invoice_destination_country}
-            onChange={(v) =>
-              handleSelectChange("invoice_destination_country", v)
-            }
-            options={countryData?.data}
-            optionKey="country_name"
-            optionLabel="country_name"
-            error={errors.invoice_destination_country}
-          />
-          <SelectField
-            label="Container Size"
-            required
-            value={formData.invoice_container_size}
-            onChange={(v) => handleChange("invoice_container_size", v)}
-            options={containerData?.data}
-            optionKey="containerSize"
-            optionLabel="containerSize"
-            error={errors.invoice_container_size}
-          />
+                <SelectField
+                  label="Dest Country"
+                  required
+                  value={formData.invoice_destination_country}
+                  onChange={(v) =>
+                    handleSelectChange("invoice_destination_country", v)
+                  }
+                  options={countryData?.data}
+                  optionKey="country_name"
+                  optionLabel="country_name"
+                  error={errors.invoice_destination_country}
+                />
+                <SelectField
+                  label="Container Size"
+                  required
+                  value={formData.invoice_container_size}
+                  onChange={(v) => handleChange("invoice_container_size", v)}
+                  options={containerData?.data}
+                  optionKey="containerSize"
+                  optionLabel="containerSize"
+                  error={errors.invoice_container_size}
+                />
 
-          <SelectField
-            label="GR Code"
-            required
-            value={formData.invoice_gr_code}
-            onChange={(v) => handleChange("invoice_gr_code", v)}
-            options={grcodeData?.data}
-            optionKey="product_name"
-            optionLabel="product_name"
-            error={errors.invoice_gr_code}
-          />
-        </div>
+                <SelectField
+                  label="GR Code"
+                  required
+                  value={formData.invoice_gr_code}
+                  onChange={(v) => handleChange("invoice_gr_code", v)}
+                  options={grcodeData?.data}
+                  optionKey="product_name"
+                  optionLabel="product_name"
+                  error={errors.invoice_gr_code}
+                />
+                {/* </div>
 
-        <div className="grid md:grid-cols-4 gap-4">
-          <SelectField
-            label="LUT Code"
-            required
-            value={formData.invoice_lut_code}
-            onChange={(v) => handleChange("invoice_lut_code", v)}
-            error={errors.invoice_lut_code}
-            options={schemeData?.data}
-            optionKey="scheme_short"
-            optionLabel="scheme_short"
-          />
+        <div className="grid md:grid-cols-4 gap-4"> */}
+                <SelectField
+                  label="LUT Code"
+                  required
+                  value={formData.invoice_lut_code}
+                  onChange={(v) => handleChange("invoice_lut_code", v)}
+                  error={errors.invoice_lut_code}
+                  options={schemeData?.data}
+                  optionKey="scheme_short"
+                  optionLabel="scheme_short"
+                />
 
-          <Field
-            label="Vessel / Flight No"
-            value={formData.invoice_vessel_flight_no}
-            onChange={(v) => handleChange("invoice_vessel_flight_no", v)}
-          />
+                <Field
+                  label="Vessel / Flight No"
+                  value={formData.invoice_vessel_flight_no}
+                  onChange={(v) => handleChange("invoice_vessel_flight_no", v)}
+                />
 
-          <SelectField
-            label="Pre-Receipt"
-            value={formData.invoice_prereceipts}
-            onChange={(v) => handleChange("invoice_prereceipts", v)}
-            options={prereceiptData?.data}
-            optionKey="prereceipts_name"
-            optionLabel="prereceipts_name"
-          />
-          <SelectField
-            label="Pre-Carriage"
-            value={formData.invoice_precarriage}
-            onChange={(v) => handleChange("invoice_precarriage", v)}
-            options={precarriageData?.data}
-            optionKey="precarriage_name"
-            optionLabel="precarriage_name"
-          />
-        </div>
+                <SelectField
+                  label="Pre-Receipt"
+                  value={formData.invoice_prereceipts}
+                  onChange={(v) => handleChange("invoice_prereceipts", v)}
+                  options={prereceiptData?.data}
+                  optionKey="prereceipts_name"
+                  optionLabel="prereceipts_name"
+                />
+                <SelectField
+                  label="Pre-Carriage"
+                  value={formData.invoice_precarriage}
+                  onChange={(v) => handleChange("invoice_precarriage", v)}
+                  options={precarriageData?.data}
+                  optionKey="precarriage_name"
+                  optionLabel="precarriage_name"
+                />
+                {/* </div>
 
         <div
           className={`grid gap-4 ${
             isEdit ? "md:grid-cols-5" : "md:grid-cols-4"
           }`}
-        >
-          <Field
-            label="Customer Description *"
-            value={formData.invoice_product_cust_des}
-            onChange={(v) => handleChange("invoice_product_cust_des", v)}
-            error={errors.invoice_product_cust_des}
-          />
-          <Field
-            label="Dollar Rate *"
-            type="number"
-            value={formData.invoice_dollar_rate}
-            onChange={(v) => handleChange("invoice_dollar_rate", v)}
-            error={errors.invoice_dollar_rate}
-          />
+        > */}
+                <Field
+                  label="Customer Description *"
+                  value={formData.invoice_product_cust_des}
+                  onChange={(v) => handleChange("invoice_product_cust_des", v)}
+                  error={errors.invoice_product_cust_des}
+                />
+                <Field
+                  label="Dollar Rate *"
+                  type="number"
+                  value={formData.invoice_dollar_rate}
+                  onChange={(v) => handleChange("invoice_dollar_rate", v)}
+                  error={errors.invoice_dollar_rate}
+                />
+              </div>
 
-          {isEdit && (
-            <div className="col-span-1">
-              <Label className="text-sm font-medium">Status</Label>
-
-              <Select
-                value={formData.invoice_status}
-                onValueChange={(v) => handleChange("invoice_status", v)}
+              <div
+                className={`grid gap-4 ${
+                  isEdit ? "md:grid-cols-5" : "md:grid-cols-4"
+                }`}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
+                {isEdit && (
+                  <div className="col-span-1">
+                    <Label className="text-sm font-medium">Status</Label>
 
-                <SelectContent>
-                  <SelectItem value="Order in Hand">
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 rounded-full bg-green-500 mr-2" />
-                      Order in Hand
-                    </div>
-                  </SelectItem>
+                    <Select
+                      value={formData.invoice_status}
+                      onValueChange={(v) => handleChange("invoice_status", v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
 
-                  <SelectItem value="Close">
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 rounded-full bg-gray-400 mr-2" />
-                      Close
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </div>
-
-        <div className="grid md:grid-cols-4 gap-4">
-          <div className="col-span-2">
-            <SelectField
-              label="Payment Terms"
-              required
-              value={formData.invoice_payment_terms}
-              onChange={(v) => handleChange("invoice_payment_terms", v)}
-              options={paymentTermData?.data}
-              optionKey="paymentTerms"
-              optionLabel="paymentTerms"
-              error={errors.invoice_payment_terms}
-            />
-          </div>
-          <div className="col-span-2">
-            <Label>Remarks</Label>
-            <Textarea
-              value={formData.invoice_remarks}
-              onChange={(e) => handleChange("invoice_remarks", e.target.value)}
-            />
-          </div>
-        </div>
-      </Card>
-      <Card className="p-4 mt-6">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[35%]">Item *</TableHead>
-              <TableHead className="w-[15%]">Qty *</TableHead>
-              <TableHead className="w-[15%]">MRP *</TableHead>
-              <TableHead className="w-[15%]">Batch *</TableHead>
-              <TableHead className="w-[15%]">Manufacture *</TableHead>
-              <TableHead className="w-[15%]">Expire *</TableHead>
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {formData.subs.map((row, idx) => (
-              <TableRow key={row.id} className="relative">
-                {/* ITEM */}
-                <TableCell>
-                  <SelectField
-                    hideLabel
-                    value={row.invoiceSub_item_id}
-                    onChange={(v) =>
-                      handleSubChange(idx, "invoiceSub_item_id", v)
-                    }
-                    options={itemData?.data || []}
-                    optionKey="id"
-                    optionLabel="item_brand_name"
-                    error={errors[`subs.${idx}.invoiceSub_item_id`]}
-                  />
-                </TableCell>
-
-                {/* QTY */}
-                <TableCell>
-                  <Field
-                    hideLabel
-                    value={row.invoiceSub_qnty ?? ""}
-                    onChange={(v) =>
-                      handleSubChange(
-                        idx,
-                        "invoiceSub_qnty",
-                        v.replace(/[^0-9]/g, "")
-                      )
-                    }
-                    error={errors[`subs.${idx}.invoiceSub_qnty`]}
-                  />
-                </TableCell>
-
-                {/* MRP */}
-                <TableCell>
-                  <Field
-                    hideLabel
-                    value={row.invoiceSub_mrp ?? ""}
-                    onChange={(v) =>
-                      handleSubChange(
-                        idx,
-                        "invoiceSub_mrp",
-                        v.replace(/[^0-9.]/g, "")
-                      )
-                    }
-                    error={errors[`subs.${idx}.invoiceSub_mrp`]}
-                  />
-                </TableCell>
-
-                <TableCell>
-                  <Field
-                    hideLabel
-                    value={row.invoiceSub_batch_no ?? ""}
-                    onChange={(v) =>
-                      handleSubChange(idx, "invoiceSub_batch_no", v)
-                    }
-                    error={errors[`subs.${idx}.invoiceSub_batch_no`]}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Field
-                    hideLabel
-                    type="date"
-                    value={row.invoiceSub_manufacture_date ?? ""}
-                    onChange={(v) =>
-                      handleSubChange(idx, "invoiceSub_manufacture_date", v)
-                    }
-                    error={errors[`subs.${idx}.invoiceSub_manufacture_date`]}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Field
-                    hideLabel
-                    type="date"
-                    value={row.invoiceSub_expire_date ?? ""}
-                    onChange={(v) =>
-                      handleSubChange(idx, "invoiceSub_expire_date", v)
-                    }
-                    error={errors[`subs.${idx}.invoiceSub_expire_date`]}
-                  />
-                </TableCell>
-
-                {formData.subs.length > 1 && (
-                  <button
-                    type="button"
-                    className={`absolute top-0 left-1 rounded-full p-1 ${
-                      row.id ? "bg-red-600 text-white" : "bg-red-600 text-white"
-                    }`}
-                    onClick={() => {
-                      if (row.id) {
-                        setSubToDelete({ index: idx, id: row.id });
-                        setDeleteConfirmOpen(true);
-                      } else {
-                        removeSub(idx);
-                      }
-                    }}
-                  >
-                    {row.id ? <Trash2 size={14} /> : <X size={12} />}
-                  </button>
+                      <SelectContent>
+                        {invoiceStatusData.data.map((item) => (
+                          <SelectItem
+                            key={item.invoice_status}
+                            value={item.invoice_status}
+                          >
+                            <div className="flex items-center gap-2">
+                              {/* Optional: Add colored dot based on status */}
+                              <div
+                                className={`w-2 h-2 rounded-full ${
+                                  item.invoice_status === "Order Cancelled"
+                                    ? "bg-red-400"
+                                    : "bg-green-400"
+                                }`}
+                              />
+                              {item.invoice_status}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 )}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                <div className="col-span-2">
+                  <SelectField
+                    label="Payment Terms"
+                    required
+                    value={formData.invoice_payment_terms}
+                    onChange={(v) => handleChange("invoice_payment_terms", v)}
+                    options={paymentTermData?.data}
+                    optionKey="paymentTerms"
+                    optionLabel="paymentTerms"
+                    error={errors.invoice_payment_terms}
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label>Remarks</Label>
+                  <Textarea
+                    value={formData.invoice_remarks}
+                    onChange={(e) =>
+                      handleChange("invoice_remarks", e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+          <TabsContent value="items" className="pt-4 space-y-4">
+            <Card className="p-0 overflow-hidden rounded-sm">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[35%]">Item *</TableHead>
+                    <TableHead className="w-[15%]">Qty *</TableHead>
+                    <TableHead className="w-[15%]">MRP *</TableHead>
+                    <TableHead className="w-[15%]">Batch *</TableHead>
+                    <TableHead className="w-[15%]">Manufacture *</TableHead>
+                    <TableHead className="w-[15%]">Expire *</TableHead>
+                    <TableHead className="w-[60px] text-center">
+                      Action
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
 
-        <Button
-          variant="outline"
-          className="mt-4"
-          onClick={addSub}
-          type="button"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Item
-        </Button>
+                <TableBody>
+                  {formData.subs.map((row, idx) => (
+                    <TableRow key={row.id}>
+                      {/* ITEM */}
+                      <TableCell>
+                        <SelectField
+                          hideLabel
+                          value={row.invoiceSub_item_id}
+                          onChange={(v) =>
+                            handleSubChange(idx, "invoiceSub_item_id", v)
+                          }
+                          options={itemData?.data || []}
+                          optionKey="id"
+                          optionLabel="item_brand_name"
+                          error={errors[`subs.${idx}.invoiceSub_item_id`]}
+                        />
+                      </TableCell>
+
+                      {/* QTY */}
+                      <TableCell>
+                        <Field
+                          hideLabel
+                          value={row.invoiceSub_qnty ?? ""}
+                          onChange={(v) =>
+                            handleSubChange(
+                              idx,
+                              "invoiceSub_qnty",
+                              v.replace(/[^0-9]/g, "")
+                            )
+                          }
+                          error={errors[`subs.${idx}.invoiceSub_qnty`]}
+                        />
+                      </TableCell>
+
+                      {/* MRP */}
+                      <TableCell>
+                        <Field
+                          hideLabel
+                          value={row.invoiceSub_mrp ?? ""}
+                          onChange={(v) =>
+                            handleSubChange(
+                              idx,
+                              "invoiceSub_mrp",
+                              v.replace(/[^0-9.]/g, "")
+                            )
+                          }
+                          error={errors[`subs.${idx}.invoiceSub_mrp`]}
+                        />
+                      </TableCell>
+
+                      <TableCell>
+                        <Field
+                          hideLabel
+                          value={row.invoiceSub_batch_no ?? ""}
+                          onChange={(v) =>
+                            handleSubChange(idx, "invoiceSub_batch_no", v)
+                          }
+                          error={errors[`subs.${idx}.invoiceSub_batch_no`]}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Field
+                          hideLabel
+                          type="date"
+                          value={row.invoiceSub_manufacture_date ?? ""}
+                          onChange={(v) =>
+                            handleSubChange(
+                              idx,
+                              "invoiceSub_manufacture_date",
+                              v
+                            )
+                          }
+                          error={
+                            errors[`subs.${idx}.invoiceSub_manufacture_date`]
+                          }
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Field
+                          hideLabel
+                          type="date"
+                          value={row.invoiceSub_expire_date ?? ""}
+                          onChange={(v) =>
+                            handleSubChange(idx, "invoiceSub_expire_date", v)
+                          }
+                          error={errors[`subs.${idx}.invoiceSub_expire_date`]}
+                        />
+                      </TableCell>
+                      {/* 
+                      {formData.subs.length > 1 && (
+                        <button
+                          type="button"
+                          className={`absolute top-0 left-1 rounded-full p-1 ${
+                            row.id
+                              ? "bg-red-600 text-white"
+                              : "bg-red-600 text-white"
+                          }`}
+                          onClick={() => {
+                            if (row.id) {
+                              setSubToDelete({ index: idx, id: row.id });
+                              setDeleteConfirmOpen(true);
+                            } else {
+                              removeSub(idx);
+                            }
+                          }}
+                        >
+                          {row.id ? <Trash2 size={14} /> : <X size={12} />}
+                        </button>
+                      )} */}
+                      <TableCell className="text-center">
+                        {formData.subs.length > 1 && (
+                          <Button
+                            size="icon"
+                            variant={row.id ? "destructive" : "secondary"}
+                            onClick={() => {
+                              if (row.id) {
+                                setSubToDelete({ index: idx, id: row.id });
+                                setDeleteConfirmOpen(true);
+                              } else {
+                                removeSub(idx);
+                              }
+                            }}
+                          >
+                            {row.id ? <Trash2 size={16} /> : <X size={14} />}
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={addSub}
+              type="button"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Item
+            </Button>
+          </TabsContent>
+        </Tabs>
       </Card>
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent>

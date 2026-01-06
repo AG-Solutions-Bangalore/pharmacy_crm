@@ -46,6 +46,8 @@ import ContractList from "@/app/contract/contract-list";
 import ContractForm from "@/app/contract/contract-form";
 import InvoiceList from "@/app/invoice/invoice-list";
 import InvoiceForm from "@/app/invoice/invoice-form";
+import InvoiceDocumentForm from "@/app/invoice/invoice-document";
+import CartonBoxList from "@/app/cartoonbox/cartoonbox-list";
 
 function AppRoutes() {
   return (
@@ -298,6 +300,14 @@ function AppRoutes() {
             }
           />
           <Route
+            path="/master/cartonbox"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <CartonBoxList />
+              </Suspense>
+            }
+          />
+          <Route
             path="/master/vendor"
             element={
               <Suspense fallback={<LoadingBar />}>
@@ -391,6 +401,14 @@ function AppRoutes() {
             element={
               <Suspense fallback={<LoadingBar />}>
                 <InvoiceForm />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/invoicedocument/edit/:id"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <InvoiceDocumentForm />
               </Suspense>
             }
           />
