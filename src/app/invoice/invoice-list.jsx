@@ -4,10 +4,8 @@ import {
   InvoiceEdit,
 } from "@/components/buttoncontrol/button-component";
 import DataTable from "@/components/common/data-table";
-import ToggleStatus from "@/components/common/status-toggle";
-import StatusSelect from "@/components/status-select/StatusSelect";
-import InvoiceStatusSelect from "@/components/status-select/StatusSelect";
 import LoadingBar from "@/components/loader/loading-bar";
+import StatusSelect from "@/components/status-select/StatusSelect";
 import { INVOICE_API } from "@/constants/apiConstants";
 import useDebounce from "@/hooks/useDebounce";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
@@ -38,7 +36,12 @@ const InvoiceList = () => {
     [pageIndex, pageSize, debouncedSearch]
   );
 
-  const { data, isLoading, isError, refetch } = useGetApiMutation({
+  const {
+    data,
+    isLoading: loading,
+    isError,
+    refetch,
+  } = useGetApiMutation({
     url: INVOICE_API.getlist,
     queryKey: ["invoice-list", pageIndex, debouncedSearch],
     params,
@@ -88,8 +91,17 @@ const InvoiceList = () => {
     },
   ];
 
-  if (isError) return <ApiErrorPage onRetry={refetch} />;
-  console.log(apiData, "apiData");
+  if (isError || invoicestatusError)
+    return (
+      <ApiErrorPage
+        onRetry={() => {
+          refetch();
+          refetchinvoicestatus();
+        }}
+      />
+    );
+
+  const isLoading = loadinginvoicestatus || loading;
   return (
     <>
       {isLoading && <LoadingBar />}
