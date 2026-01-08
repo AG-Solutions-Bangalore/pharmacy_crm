@@ -2,6 +2,7 @@ import {
   InvoiceCreate,
   InvoiceDocument,
   InvoiceEdit,
+  InvoicePackingCreate,
 } from "@/components/buttoncontrol/button-component";
 import DataTable from "@/components/common/data-table";
 import LoadingBar from "@/components/loader/loading-bar";
@@ -85,6 +86,9 @@ const InvoiceList = () => {
           />
           <InvoiceDocument
             onClick={() => navigate(`/invoicedocument/edit/${row.original.id}`)}
+          />
+          <InvoicePackingCreate
+            onClick={() => navigate(`/invoicepacking/${row.original.id}`)}
           />
         </>
       ),

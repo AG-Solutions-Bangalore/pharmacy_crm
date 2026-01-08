@@ -91,9 +91,8 @@ const BankForm = React.memo(function BankForm({ editId }) {
 
       if (res.code == 201) {
         toast.success(
-          res.message || isEdit
-            ? "Bank created successfully"
-            : "Bank updated successfully"
+          res.message ??
+            (isEdit ? "Bank created successfully" : "Bank updated successfully")
         );
         setOpen(false);
       } else {

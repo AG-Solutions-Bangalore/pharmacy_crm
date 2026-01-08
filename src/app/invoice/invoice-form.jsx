@@ -42,6 +42,14 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const EMPTY_SUB = {
   id: "",
@@ -129,6 +137,9 @@ const InvoiceForm = () => {
   const { trigger, loading } = useApiMutation();
   const { trigger: fetchRef, loading: refloading, referror } = useApiMutation();
   const [batchOptionsByRow, setBatchOptionsByRow] = useState({});
+  const [openQtyDialog, setOpenQtyDialog] = useState(false);
+  const [validationResult, setValidationResult] = useState([]);
+  const [contractSubs, setContractSubs] = useState([]);
   const {
     trigger: fetchConractRef,
     loading: contractrefloading,
@@ -317,7 +328,6 @@ const InvoiceForm = () => {
           } else {
             sub.invoiceSub_batch_no = "";
           }
-
         });
 
         setBatchOptionsByRow(batchMap);
@@ -424,6 +434,7 @@ const InvoiceForm = () => {
               String(p.purchaseSub_item_id) == String(sub.invoiceSub_item_id)
           ) || [];
       });
+      setContractSubs(subsFromContract);
 
       setBatchOptionsByRow(batchMap);
       setFormData((p) => ({
@@ -466,7 +477,10 @@ const InvoiceForm = () => {
         invoice_payment_terms: data.contract_payment_terms ?? "",
         invoice_remarks: data.contract_remarks ?? "",
 
-        subs: subsFromContract,
+        subs:
+          p.subs?.length && p.subs[0].invoiceSub_item_id
+            ? p.subs
+            : subsFromContract,
       }));
 
       clearErrors(
@@ -684,13 +698,84 @@ const InvoiceForm = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  console.log(contractSubs, "contractSubs");
+  const validateBatchQuantities = () => {
+    const contractQtyMap = {};
+    const itemQtyMap = {};
+    const result = [];
 
-  const handleSubmit = async () => {
-    if (!validateForm()) {
-      toast.error("Please fix the errors before submitting");
-      return;
+    // ===== Contract Qty =====
+    contractSubs.forEach((sub) => {
+      if (!sub.invoiceSub_item_id) return;
+
+      const key = String(sub.invoiceSub_item_id);
+      contractQtyMap[key] =
+        (contractQtyMap[key] || 0) + Number(sub.invoiceSub_qnty || 0);
+    });
+
+    // ===== Entered Qty =====
+    formData.subs.forEach((sub) => {
+      if (!sub.invoiceSub_item_id) return;
+
+      const key = String(sub.invoiceSub_item_id);
+      itemQtyMap[key] =
+        (itemQtyMap[key] || 0) + Number(sub.invoiceSub_qnty || 0);
+    });
+
+    // ===== Compare Contract Items =====
+    for (const itemId in contractQtyMap) {
+      const contractQty = contractQtyMap[itemId] || 0;
+      const enteredQty = itemQtyMap[itemId] || 0;
+
+      const itemName =
+        itemData?.data?.find((i) => String(i.id) === itemId)?.item_brand_name ||
+        "Item";
+
+      if (contractQty === enteredQty) {
+        result.push({
+          itemId,
+          itemName,
+          status: "ok",
+          contractQty,
+          enteredQty,
+        });
+      } else {
+        result.push({
+          itemId,
+          itemName,
+          status: "mismatch",
+          contractQty,
+          enteredQty,
+        });
+      }
     }
 
+    // ===== Extra Items (Not in Contract) =====
+    for (const itemId in itemQtyMap) {
+      if (!contractQtyMap[itemId]) {
+        const itemName =
+          itemData?.data?.find((i) => String(i.id) === itemId)
+            ?.item_brand_name || "Item";
+
+        result.push({
+          itemId,
+          itemName,
+          status: "extra",
+          contractQty: 0,
+          enteredQty: itemQtyMap[itemId],
+        });
+      }
+    }
+
+    const hasError = result.some((r) => r.status !== "ok");
+
+    return {
+      hasError,
+      details: result,
+    };
+  };
+
+  const submitInvoice = async () => {
     try {
       if (!isEdit) {
         const refCheckRes = await trigger({
@@ -714,7 +799,7 @@ const InvoiceForm = () => {
       });
 
       if (res?.code === 201) {
-        toast.success(res?.message || "Contract saved successfully");
+        toast.success(res?.message || "Invoice saved successfully");
         queryClient.invalidateQueries(["invoice-list"]);
         navigate("/invoice");
         return;
@@ -724,6 +809,23 @@ const InvoiceForm = () => {
     } catch (err) {
       toast.error(err?.message || "Something went wrong");
     }
+  };
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      toast.error("Please fix the errors before submitting");
+      return;
+    }
+
+    const validation = validateBatchQuantities();
+
+    if (validation.hasError) {
+      setValidationResult(validation.details);
+      setOpenQtyDialog(true);
+      return;
+    }
+
+    // ✅ All good → direct submit
+    submitInvoice();
   };
 
   const handleSubChange = (index, key, value) => {
@@ -760,8 +862,7 @@ const InvoiceForm = () => {
         subs[index].invoiceSub_expire_date =
           selectedBatch?.purchaseSub_expire_date ?? "";
         subs[index].invoiceSub_mrp = selectedBatch?.purchaseSub_mrp ?? "";
-        subs[index].purchase_sub_id =
-        selectedBatch?.purchaseSub_item_id ?? "";
+        subs[index].purchase_sub_id = selectedBatch?.purchaseSub_item_id ?? "";
       }
       return {
         ...prev,
@@ -796,6 +897,39 @@ const InvoiceForm = () => {
           : p.subs.filter((_, i) => i !== index),
     }));
   };
+  const addBatchBelowRow = (index) => {
+    setFormData((prev) => {
+      const subs = [...prev.subs];
+      const current = subs[index];
+
+      const newSub = {
+        ...EMPTY_SUB,
+
+        // keep SAME item
+        invoiceSub_item_id: current.invoiceSub_item_id,
+        invoiceSub_item_gst: current.invoiceSub_item_gst,
+
+        // clear batch-specific fields
+        invoiceSub_batch_no: "",
+        invoiceSub_manufacture_date: "",
+        invoiceSub_expire_date: "",
+        invoiceSub_mrp: "",
+        invoiceSub_selling_rate: "",
+        purchase_sub_id: "",
+      };
+
+      subs.splice(index + 1, 0, newSub);
+
+      return { ...prev, subs };
+    });
+
+    // reuse same batch options for the new row
+    setBatchOptionsByRow((prev) => ({
+      ...prev,
+      [index + 1]: prev[index] || [],
+    }));
+  };
+
   const confirmDelete = async () => {
     if (!subToDelete) return;
 
@@ -1313,17 +1447,38 @@ const InvoiceForm = () => {
                       </TableCell>
 
                       <TableCell>
-                        <SelectField
-                          hideLabel
-                          value={row.invoiceSub_batch_no}
-                          onChange={(v) =>
-                            handleSubChange(idx, "invoiceSub_batch_no", v)
-                          }
-                          options={batchOptionsByRow[idx] || []}
-                          optionKey="id"
-                          optionLabel="purchaseSub_batch_no"
-                          error={errors[`subs.${idx}.invoiceSub_batch_no`]}
-                        />
+                        <div className="flex items-center gap-2">
+                          {/* Batch Dropdown */}
+                          <div className="flex-1">
+                            <SelectField
+                              hideLabel
+                              value={row.invoiceSub_batch_no}
+                              onChange={(v) =>
+                                handleSubChange(idx, "invoiceSub_batch_no", v)
+                              }
+                              options={batchOptionsByRow[idx] || []}
+                              optionKey="id"
+                              optionLabel="purchaseSub_batch_no"
+                              error={errors[`subs.${idx}.invoiceSub_batch_no`]}
+                            />
+                          </div>
+
+                          {/* Add Batch Icon */}
+                          {row.invoiceSub_item_id &&
+                            row.invoiceSub_batch_no &&
+                            Number(row.invoiceSub_qnty) > 0 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                title="Add another batch"
+                                onClick={() => addBatchBelowRow(idx)}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            )}
+                        </div>
                       </TableCell>
 
                       <TableCell>
@@ -1449,6 +1604,71 @@ const InvoiceForm = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <Dialog open={openQtyDialog} onOpenChange={setOpenQtyDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Quantity Validation</DialogTitle>
+            <DialogDescription>
+              Please review item quantities before submitting.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 max-h-80 overflow-auto">
+            {validationResult.map((row) => (
+              <div
+                key={row.itemId}
+                className="flex items-center justify-between border rounded-md p-3"
+              >
+                <div>
+                  <p className="font-medium">{row.itemName}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Contract: {row.contractQty} | Entered: {row.enteredQty}
+                  </p>
+                </div>
+
+                {row.status === "ok" && (
+                  <span className="text-green-600">✔</span>
+                )}
+
+                {row.status === "mismatch" && (
+                  <span className="text-red-600">✖</span>
+                )}
+
+                {row.status === "extra" && (
+                  <span className="text-orange-600">⚠</span>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <DialogFooter className="flex justify-between">
+            <Button variant="outline" onClick={() => setOpenQtyDialog(false)}>
+              Cancel
+            </Button>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  setOpenQtyDialog(false);
+                  submitInvoice();
+                }}
+              >
+                Skip & Submit
+              </Button>
+
+              {/* <Button
+                disabled={validationResult.some((r) => r.status !== "ok")}
+                onClick={() => {
+                  setOpenQtyDialog(false);
+                  submitInvoice();
+                }}
+              >
+                Submit
+              </Button> */}
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

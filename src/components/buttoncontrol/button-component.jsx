@@ -1095,6 +1095,39 @@ export const InvoiceDocument = forwardRef(({ onClick, className }, ref) => {
 });
 
 InvoiceDocument.page = "Invoice";
+/////// MASTER – InvoicePackingCreate
+export const InvoicePackingCreate = forwardRef(
+  ({ onClick, className }, ref) => {
+    const userId = useSelector((state) => state.auth.user?.id);
+    const buttonPermissions = useSelector(
+      (state) => state.permissions.buttonPermissions
+    );
+
+    if (
+      !checkPermission(
+        String(userId),
+        "InvoicePackingCreate",
+        buttonPermissions
+      )
+    ) {
+      return null;
+    }
+
+    return (
+      <Button
+        ref={ref}
+        variant="ghost"
+        size="icon"
+        className={className}
+        onClick={onClick}
+      >
+        <SquarePlus className="h-4 w-4" />
+      </Button>
+    );
+  }
+);
+
+InvoicePackingCreate.page = "Invoice";
 /////// MASTER – CartonBox
 export const CartonBoxCreate = forwardRef(({ onClick, className }, ref) => {
   const userId = useSelector((state) => state.auth.user?.id);
@@ -1141,6 +1174,134 @@ export const CartonBoxEdit = forwardRef(({ onClick, className }, ref) => {
 });
 
 CartonBoxEdit.page = "CartonBox";
+/////// MASTER – ProductDescription
+export const ProductDescriptionCreate = forwardRef(
+  ({ onClick, className }, ref) => {
+    const userId = useSelector((state) => state.auth.user?.id);
+    const buttonPermissions = useSelector(
+      (state) => state.permissions.buttonPermissions
+    );
+
+    if (
+      !checkPermission(
+        String(userId),
+        "ProductDescriptionCreate",
+        buttonPermissions
+      )
+    ) {
+      return null;
+    }
+
+    return (
+      <Button
+        ref={ref}
+        variant="default"
+        className={className}
+        onClick={onClick}
+      >
+        <SquarePlus className="h-4 w-4 mr-2" />
+        Product Description
+      </Button>
+    );
+  }
+);
+
+ProductDescriptionCreate.page = "Product Description";
+
+/////// MASTER – ProductDescriptionEdit
+export const ProductDescriptionEdit = forwardRef(
+  ({ onClick, className }, ref) => {
+    const userId = useSelector((state) => state.auth.user?.id);
+    const buttonPermissions = useSelector(
+      (state) => state.permissions.buttonPermissions
+    );
+
+    if (
+      !checkPermission(
+        String(userId),
+        "ProductDescriptionEdit",
+        buttonPermissions
+      )
+    ) {
+      return null;
+    }
+
+    return (
+      <Button
+        ref={ref}
+        onClick={onClick}
+        className={className}
+        variant="ghost"
+        size="icon"
+      >
+        <Edit className="h-4 w-4 text-black" />
+      </Button>
+    );
+  }
+);
+
+ProductDescriptionEdit.page = "Product Description";
+/////// MASTER – Invoice Payment
+export const InvoicePaymentCreate = forwardRef(
+  ({ onClick, className }, ref) => {
+    const userId = useSelector((state) => state.auth.user?.id);
+    const buttonPermissions = useSelector(
+      (state) => state.permissions.buttonPermissions
+    );
+
+    if (
+      !checkPermission(
+        String(userId),
+        "InvoicePaymentCreate",
+        buttonPermissions
+      )
+    ) {
+      return null;
+    }
+
+    return (
+      <Button
+        ref={ref}
+        variant="default"
+        className={className}
+        onClick={onClick}
+      >
+        <SquarePlus className="h-4 w-4 mr-2" />
+        Invoice Payment
+      </Button>
+    );
+  }
+);
+
+InvoicePaymentCreate.page = "Invoice Payment";
+
+/////// MASTER – InvoicePaymentEdit
+export const InvoicePaymentEdit = forwardRef(({ onClick, className }, ref) => {
+  const userId = useSelector((state) => state.auth.user?.id);
+  const buttonPermissions = useSelector(
+    (state) => state.permissions.buttonPermissions
+  );
+
+  if (
+    !checkPermission(String(userId), "InvoicePaymentEdit", buttonPermissions)
+  ) {
+    return null;
+  }
+
+  return (
+    <Button
+      ref={ref}
+      onClick={onClick}
+      className={className}
+      variant="ghost"
+      size="icon"
+    >
+      <Edit className="h-4 w-4 text-black" />
+    </Button>
+  );
+});
+
+InvoicePaymentEdit.page = "Invoice Payment";
 export default {
   BuyerCreate,
   EditBuyer,
@@ -1189,6 +1350,11 @@ export default {
   InvoiceCreate,
   InvoiceEdit,
   InvoiceDocument,
+  InvoicePackingCreate,
   CartonBoxCreate,
   CartonBoxEdit,
+  ProductDescriptionCreate,
+  ProductDescriptionEdit,
+  InvoicePaymentCreate,
+  InvoicePaymentEdit,
 };

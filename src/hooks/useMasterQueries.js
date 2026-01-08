@@ -2,6 +2,7 @@ import {
   BANK_API,
   BRANCH_API,
   BUYER_LIST,
+  CARTONBOX_API,
   CONTAINERSIZE_API,
   CONTRACT_API,
   COUNTRY_API,
@@ -10,6 +11,7 @@ import {
   INVOICE_API,
   ITEMS_API,
   MARKING_API,
+  PAYMENT_API,
   PAYMENTTERM_API,
   PORT_API,
   PRECARRIAGES_API,
@@ -102,6 +104,18 @@ const MASTER_APIS = {
   activepurchaseother: {
     url: PURCHASE_API.activeother,
     queryKey: ["activepurchaseother-active"],
+  },
+  cartonbox: {
+    url: CARTONBOX_API.active,
+    queryKey: ["cartonbox-active"],
+  },
+  paymentamount: {
+    url: PAYMENT_API.paymentamount,
+    queryKey: ["payment-amount"],
+  },
+  paymentstatus: {
+    url: PAYMENT_API.status,
+    queryKey: ["payment-status"],
   },
 
   year: {

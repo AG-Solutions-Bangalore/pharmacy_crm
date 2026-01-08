@@ -48,6 +48,11 @@ import InvoiceList from "@/app/invoice/invoice-list";
 import InvoiceForm from "@/app/invoice/invoice-form";
 import InvoiceDocumentForm from "@/app/invoice/invoice-document";
 import CartonBoxList from "@/app/cartoonbox/cartoonbox-list";
+import InvoicePackingForm from "@/app/invoice/invoice-packing";
+import ProductDescriptionList from "@/app/productdescription/product-description-list";
+import DutyDrawbackList from "@/app/dutydrawback/dutydrawback-list";
+import InvoicePaymentList from "@/app/invoicepayment/invoicepayment-list";
+import InvoicePaymentForm from "@/app/invoicepayment/invoice-payment-form";
 
 function AppRoutes() {
   return (
@@ -409,6 +414,54 @@ function AppRoutes() {
             element={
               <Suspense fallback={<LoadingBar />}>
                 <InvoiceDocumentForm />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/invoicepacking/:id"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <InvoicePackingForm />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/master/product-description"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <ProductDescriptionList />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/master/dutydrawback"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <DutyDrawbackList />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/invoice-payment"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <InvoicePaymentList />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/invoice-payment/create"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <InvoicePaymentForm />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/invoice-payment/edit/:id"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <InvoicePaymentForm />
               </Suspense>
             }
           />

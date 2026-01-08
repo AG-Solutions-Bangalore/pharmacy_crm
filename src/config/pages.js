@@ -33,6 +33,9 @@ export const sidebarData = {
     { name: "Contract", url: "/contract" },
     { name: "Invoice", url: "/invoice" },
     { name: "CartonBox", url: "/master/cartonbox" },
+    { name: "Product Description", url: "/master/product-description" },
+    { name: "Duty Drawback", url: "/master/dutydrawback" },
+    { name: "Invoice Payment", url: "/invoice-payment" },
   ],
   userManagement: [
     { name: "User Management", url: "/userManagement" },
