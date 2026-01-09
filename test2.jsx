@@ -439,3 +439,17 @@ const InvoiceView = () => {
 };
 
 export default InvoiceView;
+"invoiceSub_ref": "CSEI\/TESTERAGILE25-268",
+                "invoiceSub_item_id": 1,
+                "purchase_sub_id": 1,
+                "invoiceSub_qnty": "2.00",
+                "invoiceSub_mrp": "24.00",
+                "invoiceSub_selling_rate": "4.00",
+                "invoiceSub_item_gst": "4.00",
+                "invoiceSub_batch_no": "1",
+                "invoiceSub_manufacture_date": "2026-01-06",
+                "invoiceSub_expire_date": "2026-01-07",
+                "item_hsn_code": "30049099",
+                "item_brand_name": "ACNESTAR GEL (20GM)",
+                "item_generic_name": "CLINDAMYCIN(1%W\/W) + NICOTINAMIDE(4%W\/W)",
+                "item_company_name": "MANKIND"
