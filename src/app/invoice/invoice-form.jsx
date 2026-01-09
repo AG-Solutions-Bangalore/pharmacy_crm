@@ -862,7 +862,7 @@ const InvoiceForm = () => {
         subs[index].invoiceSub_expire_date =
           selectedBatch?.purchaseSub_expire_date ?? "";
         subs[index].invoiceSub_mrp = selectedBatch?.purchaseSub_mrp ?? "";
-        subs[index].purchase_sub_id = selectedBatch?.purchaseSub_item_id ?? "";
+        subs[index].purchase_sub_id = selectedBatch?.id ?? "";
       }
       return {
         ...prev,

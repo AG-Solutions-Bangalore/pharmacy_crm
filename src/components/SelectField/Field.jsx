@@ -12,6 +12,7 @@ const Field = ({
   disabled,
   className,
   readOnly,
+  placeholder,
 }) => (
   <div>
     {!hideLabel && <Label>{label}</Label>}
@@ -22,6 +23,7 @@ const Field = ({
       disabled={disabled}
       className={className}
       readOnly={readOnly}
+      placeholder={placeholder}
     />
     {error && <p className="text-xs text-red-500">{error}</p>}
   </div>

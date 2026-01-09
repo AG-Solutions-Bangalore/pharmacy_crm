@@ -1,784 +1,455 @@
-import Page from "@/app/dashboard/page";
-import React, { useCallback, useEffect, useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { z } from "zod";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
-import { ProgressBar } from "@/components/spinner/ProgressBar";
-import { ButtonConfig } from "@/config/ButtonConfig";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import BASE_URL from "@/config/BaseUrl";
-import { MinusCircle, PlusCircle } from "lucide-react";
+"use client";
+
+import ApiErrorPage from "@/components/api-error/api-error";
+import PageHeader from "@/components/common/page-header";
+import LoadingBar from "@/components/loader/loading-bar";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
   Table,
-  TableHeader,
-  TableRow,
-  TableHead,
   TableBody,
   TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-import { useCurrentYear } from "@/hooks/useCurrentYear";
-// Validation Schema
+import { CONTRACT_API, INVOICE_API } from "@/constants/apiConstants";
+import useMasterQueries from "@/hooks/useMasterQueries";
+import { useApiMutation } from "@/hooks/useApiMutation";
+import { FileText } from "lucide-react";
+import moment from "moment";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const productRowSchema = z.object({
-  invoicePSub_inv_ref: z.string().min(1, "Ref data is required"),
-  invoicePSub_amt_adv: z.any().optional(),
-  invoicePSub_amt_dp: z.any().optional(),
-  invoicePSub_amt_da: z.any().optional(),
-  invoicePSub_bank_c: z.any().optional(),
-  invoicePSub_discount: z.any().optional(),
-  invoicePSub_shortage: z.any().optional(),
-  invoiceSub_sbaga: z.any().optional(),
-  invoicePSub_remarks: z.string().optional(),
-});
-
-const contractFormSchema = z.object({
-  invoiceP_years: z.string().optional(),
-
-  invoiceP_dates: z.string().min(1, "P Date is required"),
-  branch_short: z.string().min(1, "Branch Short is required"),
-  branch_name: z.string().min(1, "Branch Name is required"),
-  invoiceP_dollar_rate: z.string().min(1, "Dollar Rate is required"),
-  invoiceP_v_date: z.string().min(1, "Invoice Date is required"),
-  invoiceP_usd_amount: z.string().min(1, "USD amount is required"),
-  invoiceP_irtt_no: z.any().optional(),
-  invoiceP_status: z.string().min(1, "Status is required"),
-  payment_data: z.array(productRowSchema),
-});
-
-const BranchHeader = () => {
-  return (
-    <div
-      className={`flex sticky top-0 z-10 border border-gray-200 rounded-lg justify-between items-start gap-8 mb-2 ${ButtonConfig.cardheaderColor} p-4 shadow-sm`}
-    >
-      <div className="flex-1">
-        <h1 className="text-3xl font-bold text-gray-800">Create Payment</h1>
-      </div>
+/* -------------------- VIEW FIELD -------------------- */
+const ViewField = ({ label, value }) => (
+  <div className="space-y-1">
+    <Label className="text-sm text-muted-foreground">{label}</Label>
+    <div className="text-sm font-medium border rounded-md px-3 py-2 bg-muted">
+      {value || "-"}
     </div>
-  );
+  </div>
+);
+
+/* -------------------- INITIAL STATE -------------------- */
+const INITIAL_STATE = {
+  subs: [],
 };
 
-const createBranch = async (data) => {
-  const token = localStorage.getItem("token");
-  if (!token) throw new Error("No authentication token found");
-
-  const response = await fetch(`${BASE_URL}/api/panel-create-invoice-payment`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
+const InvoiceView = () => {
+  const { id } = useParams();
+  const { trigger: fetchData, loading, error } = useApiMutation();
+  const [formData, setFormData] = useState(INITIAL_STATE);
+  const [availableItems, setAvailableItems] = useState([]);
+  const [activeCartonIndex, setActiveCartonIndex] = useState(0);
+  const [currentCarton, setCurrentCarton] = useState({
+    invoicePackingSub_carton_no: "",
+    invoicePackingSub_box_size: "",
   });
+  const [subs1, setSubs1] = useState([]);
 
-  const responseData = await response.json();
-
-  if (!response.ok) {
-    throw responseData;
-  }
-
-  return responseData;
-};
-
-const CreatePayment = () => {
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const { data: currentYear } = useCurrentYear();
-  useEffect(() => {
-    if (currentYear) {
-      setFormData((prev) => ({
-        ...prev,
-        invoiceP_years: currentYear,
-      }));
-    }
-  }, [currentYear]);
-  const [formData, setFormData] = useState({
-    invoiceP_years: currentYear,
-    invoiceP_dates: "",
-    branch_short: "",
-    branch_name: "",
-    invoiceP_dollar_rate: "",
-    invoiceP_v_date: "",
-    invoiceP_usd_amount: "",
-    invoiceP_irtt_no: "",
-    invoiceP_status: "",
-  });
-  const [invoiceData, setInvoiceData] = useState([
+  const [cartons, setCartons] = useState([
     {
-      invoicePSub_inv_ref: "",
-      invoicePSub_amt_adv: 0,
-      invoicePSub_amt_dp: 0,
-      invoicePSub_amt_da: 0,
-      invoicePSub_bank_c: 0,
-      invoicePSub_discount: 0,
-      invoicePSub_shortage: 0,
-      invoicePSub_remarks: "",
+      invoicePackingSub_ref: "",
+      invoicePackingSub_carton_no: "",
+      invoicePackingSub_box_size: "",
+      items: [],
     },
   ]);
-  const addRow = useCallback(() => {
-    setInvoiceData((prev) => [
+  console.log(availableItems, "availableItems");
+  console.log(activeCartonIndex, "activeCartonIndex");
+  console.log(cartons, "cartons");
+  const master = useMasterQueries(["item", "activepurchaseother"]);
+
+  const { data: itemData } = master.item;
+  const { data: activePurchaseItemOther } = master.activepurchaseother;
+
+  useEffect(() => {
+    if (!id) return;
+
+    (async () => {
+      const res = await fetchData({
+        url: INVOICE_API.getById(id),
+      });
+
+      const data = res?.data;
+      if (!data) return;
+
+      setFormData({
+        ...data,
+        invoice_date: data.invoice_date
+          ? moment(data.invoice_date).format("DD-MM-YYYY")
+          : "",
+        contract_date: data.contract_date
+          ? moment(data.contract_date).format("DD-MM-YYYY")
+          : "",
+      });
+      setAvailableItems(
+        formData.subs.map((item, index) => ({
+          ...item,
+          row_id: `${item.purchase_sub_id}_${index}`,
+        }))
+      );
+    })();
+  }, [id]);
+  const addCarton = () => {
+    setCartons((prev) => [
       ...prev,
       {
-        invoicePSub_inv_ref: "",
-        invoicePSub_amt_adv: "",
-        invoicePSub_amt_dp: "",
-        invoicePSub_amt_da: "",
-        invoicePSub_bank_c: "",
-        invoicePSub_discount: "",
-        invoicePSub_shortage: "",
-        invoicePSub_remarks: "",
+        invoicePackingSub_ref: "",
+        invoicePackingSub_carton_no: "",
+        invoicePackingSub_box_size: "",
+        items: [],
       },
     ]);
-  }, []);
-  const removeRow = useCallback(
-    (index) => {
-      if (invoiceData.length > 1) {
-        setInvoiceData((prev) => prev.filter((_, i) => i !== index));
-      }
-    },
-    [invoiceData.length]
-  );
-  const createBranchMutation = useMutation({
-    mutationFn: createBranch,
-    onSuccess: (response) => {
-      if (response.code == 200) {
-        toast({
-          title: "Success",
-          description: response.msg,
-        });
-        navigate("/payment-payment-list");
-      } else if (response.code == 400) {
-        toast({
-          title: "Duplicate Entry",
-          description: response.msg,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Unexpected Response",
-          description: response.msg || "Something unexpected happened.",
-          variant: "destructive",
-        });
-      }
-      setFormData({
-        invoiceP_years: currentYear,
-        invoiceP_dates: "",
-        branch_short: "",
-        branch_name: "",
-        invoiceP_dollar_rate: "",
-        invoiceP_v_date: "",
-        invoiceP_usd_amount: "",
-        invoiceP_irtt_no: "",
-        invoiceP_status: "",
-      });
+  };
 
-      setInvoiceData([
-        {
-          invoicePSub_inv_ref: "",
-          invoicePSub_amt_adv: "",
-          invoicePSub_amt_dp: "",
-          invoicePSub_amt_da: "",
-          invoicePSub_bank_c: "",
-          invoicePSub_discount: "",
-          invoicePSub_shortage: "",
-          invoicePSub_remarks: "",
-        },
-      ]);
-    },
-    onError: (error) => {
-      console.error("API Error:", error);
-
-      toast({
-        title: "Error",
-        description: error.msg || "Something went wrong",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handlePaymentChange = (e, rowIndex, fieldName) => {
-    const value = e.target.value;
-
+  const addItemToCarton = (item) => {
     if (
-      fieldName === "invoicePSub_inv_ref" ||
-      fieldName === "invoicePSub_remarks"
+      !currentCarton.invoicePackingSub_carton_no ||
+      !currentCarton.invoicePackingSub_box_size
     ) {
-      const updatedData = [...invoiceData];
-      updatedData[rowIndex][fieldName] = value;
-      setInvoiceData(updatedData);
-    } else {
-      if (/^\d*\.?\d*$/.test(value)) {
-        const updatedData = [...invoiceData];
-        updatedData[rowIndex][fieldName] = value;
-        setInvoiceData(updatedData);
-      } else {
-        console.log("Invalid input. Only digits are allowed.");
-      }
+      alert("Enter Carton No & Box Size first");
+      return;
     }
+
+    const packingRow = {
+      row_id: item.row_id,
+
+      invoicePackingSub_ref: formData.invoice_ref,
+      invoicePackingSub_carton_no: currentCarton.invoicePackingSub_carton_no,
+      invoicePackingSub_box_size: currentCarton.invoicePackingSub_box_size,
+
+      invoicePackingSub_item_id: item.invoiceSub_item_id,
+      invoicePackingSub_batch_no: item.invoiceSub_batch_no,
+      invoicePackingSub_manufacture_date: item.invoiceSub_manufacture_date,
+      invoicePackingSub_expire_date: item.invoiceSub_expire_date,
+      invoicePackingSub_qnty: item.invoiceSub_qnty,
+      invoicePackingSub_mrp: item.invoiceSub_mrp,
+      invoicePackingSub_item_gst: item.invoiceSub_item_gst,
+      invoicePackingSub_net_weight: item.invoiceSub_net_weight,
+      invoicePackingSub_gross_weight: item.invoiceSub_gross_weight,
+      invoicePackingSub_selling_price: item.invoiceSub_selling_rate,
+
+      purchase_sub_id: item.purchase_sub_id,
+    };
+
+    // 👉 ADD TO RIGHT SIDE
+    setSubs1((prev) => [...prev, packingRow]);
+
+    // 👉 REMOVE FROM LEFT SIDE
+    setAvailableItems((prev) => prev.filter((i) => i.row_id !== item.row_id));
   };
 
-  const handleInputChange = (e, field) => {
-    const value = e.target ? e.target.value : e;
+  const removeItemFromCarton = (row) => {
+    setSubs1((prev) => prev.filter((i) => i.row_id !== row.row_id));
 
-    setFormData((prev) => {
-      if (field === "branch_short") {
-        const selectedBranch = branchData?.branch.find(
-          (branch) => branch.branch_short === value
-        );
-        return {
-          ...prev,
-          branch_short: value,
-          branch_name: selectedBranch ? selectedBranch.branch_name : "",
-        };
-      }
-      return { ...prev, [field]: value };
-    });
+    setAvailableItems((prev) => [...prev, row]);
   };
 
-  const fetchCompanys = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("No authentication token found");
+  const canAdd =
+    cartons[activeCartonIndex]?.invoicePackingSub_carton_no &&
+    cartons[activeCartonIndex]?.invoicePackingSub_box_size;
 
-    const response = await fetch(`${BASE_URL}/api/panel-fetch-branch`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+  if (error) {
+    return <ApiErrorPage />;
+  }
 
-    if (!response.ok) throw new Error("Failed to fetch company data");
-    return response.json();
-  };
-
-  const { data: branchData } = useQuery({
-    queryKey: ["branch"],
-    queryFn: fetchCompanys,
-  });
-  const fetchPaymentStatus = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("No authentication token found");
-
-    const response = await fetch(
-      `${BASE_URL}/api/panel-fetch-invoice-payment-status`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) throw new Error("Failed to fetch company data");
-    const data = await response.json();
-    return data.invoicePaymentStatus;
-  };
-
-  const { data: PaymentData } = useQuery({
-    queryKey: ["payment"],
-    queryFn: fetchPaymentStatus,
-  });
-  const fetchPaymentAmount = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("No authentication token found");
-
-    const response = await fetch(
-      `${BASE_URL}/api/panel-fetch-invoice-payment-amount`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) throw new Error("Failed to fetch company data");
-    const data = await response.json();
-    return data.invoicePaymentAmount;
-  };
-
-  const { data: PaymentAmount } = useQuery({
-    queryKey: ["paymentamount"],
-    queryFn: fetchPaymentAmount,
-  });
-
-  const fieldLabels = {
-    invoicePSub_inv_ref: " Invoice Ref",
-    invoiceP_dates: "Payment Date",
-    branch_name: "Company Name",
-    invoiceP_dollar_rate: " Dollor Rate",
-    invoiceP_v_date: "Value Date",
-    invoiceP_usd_amount: "Usd Amount",
-    invoiceP_irtt_no: "IRTT No",
-    invoiceP_status: "Status",
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const totalInvoiceSubAmount = invoiceData.reduce(
-        (sum, item) =>
-          sum +
-          (Number(item.invoicePSub_amt_adv) || 0) +
-          (Number(item.invoicePSub_amt_dp) || 0) +
-          (Number(item.invoicePSub_amt_da) || 0) +
-          (Number(item.invoicePSub_bank_c) || 0) +
-          (Number(item.invoicePSub_discount) || 0) +
-          (Number(item.invoicePSub_shortage) || 0),
-        0
-      );
-
-      const invoiceUsdAmount = Number(formData.invoiceP_usd_amount) || 0;
-
-      if (invoiceUsdAmount !== totalInvoiceSubAmount) {
-        throw new z.ZodError([
-          {
-            path: ["invoiceP_usd_amount"],
-            message: "Amount Does Not Match",
-          },
-        ]);
-      }
-      const validatedData = contractFormSchema.parse({
-        ...formData,
-        payment_data: invoiceData,
-      });
-
-      createBranchMutation.mutate(validatedData);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const groupedErrors = error.errors.reduce((acc, err) => {
-          const field = err.path.join(".");
-          if (!acc[field]) acc[field] = [];
-          acc[field].push(err.message);
-          return acc;
-        }, {});
-
-        const errorMessages = Object.entries(groupedErrors).map(
-          ([field, messages]) => {
-            const fieldKey = field.split(".").pop();
-            const label = fieldLabels[fieldKey] || field;
-            return `${label}: ${messages.join(", ")}`;
-          }
-        );
-
-        toast({
-          title: "Validation Error",
-          description: (
-            <div>
-              <ul className="list-disc pl-5">
-                {errorMessages.map((message, index) => (
-                  <li key={index}>{message}</li>
-                ))}
-              </ul>
-            </div>
-          ),
-          variant: "destructive",
-        });
-      } else {
-        console.error("Unexpected error:", error);
-        toast({
-          title: "Error",
-          description: "An unexpected error occurred. Please try again.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
+  if (loading) {
+    return <LoadingBar />;
+  }
+  console.log(availableItems, "availableItems");
   return (
-    <Page>
-      <form onSubmit={handleSubmit} className="w-full p-4">
-        <BranchHeader />
-        <Card className={`mb-6 ${ButtonConfig.cardColor}`}>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-4 gap-2">
-              <div>
-                <div>
-                  <label
-                    className={`block  ${ButtonConfig.cardLabel} text-sm mb-2 font-medium `}
-                  >
-                    Payment Date<span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    className="bg-white"
-                    value={formData.invoiceP_dates}
-                    onChange={(e) => handleInputChange(e, "invoiceP_dates")}
-                    placeholder="Enter Payment Date"
-                    type="date"
-                  />
-                </div>
-              </div>
-              <div>
-                <label
-                  className={`block  ${ButtonConfig.cardLabel} text-sm mb-2 font-medium `}
-                >
-                  Company <span className="text-red-500">*</span>
-                </label>
-                <Select
-                  value={formData.branch_short}
-                  onValueChange={(value) =>
-                    handleInputChange({ target: { value } }, "branch_short")
-                  }
-                >
-                  <SelectTrigger className="bg-white">
-                    <SelectValue placeholder="Select Company" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white">
-                    <SelectContent>
-                      {branchData?.branch?.map((branch) => (
-                        <SelectItem
-                          key={branch.branch_short}
-                          value={branch.branch_short}
-                        >
-                          {branch.branch_short}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </SelectContent>
-                </Select>
-              </div>
+    <>
+      <PageHeader icon={FileText} title="Invoice Packing" />
 
-              <div>
-                <div>
-                  <label
-                    className={`block  ${ButtonConfig.cardLabel} text-sm mb-2 font-medium `}
-                  >
-                    Value Date<span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    className="bg-white"
-                    value={formData.invoiceP_v_date}
-                    onChange={(e) => handleInputChange(e, "invoiceP_v_date")}
-                    placeholder="Enter Date"
-                    type="date"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div>
-                  <label
-                    className={`block  ${ButtonConfig.cardLabel} text-sm mb-2 font-medium `}
-                  >
-                    USD Amount<span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    className="bg-white"
-                    value={formData.invoiceP_usd_amount}
-                    onChange={(e) =>
-                      handleInputChange(e, "invoiceP_usd_amount")
-                    }
-                    placeholder="Enter  USD Amount"
-                    type="number"
-                  />
-                </div>
-              </div>
-              <div>
-                <div>
-                  <label
-                    className={`block  ${ButtonConfig.cardLabel} text-sm mb-2 font-medium `}
-                  >
-                    Dollor Rate<span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    className="bg-white"
-                    value={formData.invoiceP_dollar_rate}
-                    onChange={(e) =>
-                      handleInputChange(e, "invoiceP_dollar_rate")
-                    }
-                    placeholder="Enter Dollor Rate"
-                    type="number"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div>
-                  <label
-                    className={`block  ${ButtonConfig.cardLabel} text-sm mb-2 font-medium `}
-                  >
-                    Irtt Number
-                  </label>
-                  <Input
-                    className="bg-white"
-                    value={formData.invoiceP_irtt_no}
-                    onChange={(e) => handleInputChange(e, "invoiceP_irtt_no")}
-                    placeholder="Enter Irtt Number"
-                    type="number"
-                  />
-                </div>
-              </div>
-
-              <div className="grid gap-1">
-                <label
-                  className={`block  ${ButtonConfig.cardLabel} text-sm mb-2 font-medium `}
-                >
-                  Status<span className="text-red-500">*</span>
-                </label>
-                <Select
-                  value={formData.invoiceP_status}
-                  onValueChange={(value) =>
-                    handleInputChange({ target: { value } }, "invoiceP_status")
-                  }
-                >
-                  <SelectTrigger className="bg-white">
-                    <SelectValue placeholder="Select Status" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white">
-                    {PaymentData?.map((status, index) => (
-                      <SelectItem
-                        key={index}
-                        value={status.invoicePaymentStatus}
-                      >
-                        {status.invoicePaymentStatus}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+      <Card className="p-4 space-y-6">
+        <Tabs defaultValue="form" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="form">Invoice Details</TabsTrigger>
+            <TabsTrigger value="items">Items</TabsTrigger>
+            <TabsTrigger value="packing">Packing</TabsTrigger>
+          </TabsList>
+          <TabsContent value="form" className="pt-4">
+            {/* ---------------- BASIC INFO ---------------- */}
+            <div className="grid md:grid-cols-4 gap-4">
+              <ViewField label="Contract Ref" value={formData.contract_ref} />
+              <ViewField label="Invoice No" value={formData.invoice_no} />
+              <ViewField label="Invoice Ref" value={formData.invoice_ref} />
+              <ViewField label="Invoice Date" value={formData.invoice_date} />
             </div>
 
-            <div className="mt-4">
-              <Table className="border border-gray-300 rounded-lg shadow-sm">
+            {/* ---------------- PARTY DETAILS ---------------- */}
+            <div className="grid md:grid-cols-3 gap-4">
+              <ViewField label="Buyer" value={formData.invoice_buyer} />
+              <ViewField label="Consignee" value={formData.invoice_consignee} />
+              <ViewField label="Bank" value={formData.invoice_consig_bank} />
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <ViewField
+                label="Buyer Address"
+                value={formData.invoice_buyer_add}
+              />
+              <ViewField
+                label="Consignee Address"
+                value={formData.invoice_consignee_add}
+              />
+              <ViewField
+                label="Bank Address"
+                value={formData.invoice_consig_bank_address}
+              />
+            </div>
+
+            {/* ---------------- LOGISTICS ---------------- */}
+            <div className="grid md:grid-cols-4 gap-4">
+              <ViewField
+                label="Port of Loading"
+                value={formData.invoice_loading}
+              />
+              <ViewField
+                label="Destination Port"
+                value={formData.invoice_destination_port}
+              />
+              <ViewField
+                label="Discharge Port"
+                value={formData.invoice_discharge}
+              />
+              <ViewField label="CIF" value={formData.invoice_cif} />
+            </div>
+
+            <div className="grid md:grid-cols-4 gap-4">
+              <ViewField
+                label="Destination Country"
+                value={formData.invoice_destination_country}
+              />
+              <ViewField
+                label="Container Size"
+                value={formData.invoice_container_size}
+              />
+              <ViewField label="GR Code" value={formData.invoice_gr_code} />
+              <ViewField label="LUT Code" value={formData.invoice_lut_code} />
+            </div>
+
+            {/* ---------------- FINANCIAL ---------------- */}
+            <div className="grid md:grid-cols-4 gap-4">
+              <ViewField
+                label="Dollar Rate"
+                value={formData.invoice_dollar_rate}
+              />
+              <ViewField
+                label="Payment Terms"
+                value={formData.invoice_payment_terms}
+              />
+              <ViewField label="Status" value={formData.invoice_status} />
+              <ViewField
+                label="Vessel / Flight No"
+                value={formData.invoice_vessel_flight_no}
+              />
+            </div>
+
+            <ViewField label="Remarks" value={formData.invoice_remarks} />
+          </TabsContent>
+          <TabsContent value="items" className="pt-4 space-y-4">
+            <Card className="p-0 overflow-hidden rounded-sm">
+              <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-100">
-                    <TableHead className="text-sm font-semibold text-gray-600 py-2 px-4">
-                      Invoice No
-                    </TableHead>
-                    <TableHead className="text-sm font-semibold text-gray-600 py-2 px-4">
-                      Adj Adv
-                    </TableHead>
-                    <TableHead className="text-sm font-semibold text-gray-600 py-2 px-4">
-                      Adj Dp
-                    </TableHead>
-                    <TableHead className="text-sm font-semibold text-gray-600 py-2 px-4">
-                      Adj DA
-                    </TableHead>
-                    <TableHead className="text-sm font-semibold text-gray-600 py-2 px-4">
-                      Bank Ch
-                    </TableHead>
-                    <TableHead className="text-sm font-semibold text-gray-600 py-2 px-4">
-                      Discount
-                    </TableHead>
-                    <TableHead className="text-sm font-semibold text-gray-600 py-2 px-4">
-                      Shortage
-                    </TableHead>
-                    <TableHead className="text-sm font-semibold text-gray-600 py-2 px-4">
-                      Remarks
-                    </TableHead>
-                    {/* <TableHead className="text-sm font-semibold text-gray-600 py-2 px-4">
-                      Actions
-                    </TableHead> */}
+                  <TableRow>
+                    <TableHead>Item</TableHead>
+                    <TableHead>Batch</TableHead>
+                    <TableHead>MFG</TableHead>
+                    <TableHead>EXP</TableHead>
+                    <TableHead>Qty</TableHead>
+                    <TableHead>MRP</TableHead>
+                    <TableHead>Selling</TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>
-                  {invoiceData.map((row, rowIndex) => (
-                    <TableRow
-                      key={rowIndex}
-                      className="border-t border-gray-200 hover:bg-gray-50 "
-                    >
-                      <TableCell className="px-4 py-2 relative">
-                        <Select
-                          value={row.invoicePSub_inv_ref}
-                          onValueChange={(value) => {
-                            handlePaymentChange(
-                              { target: { value } },
-                              rowIndex,
-                              "invoicePSub_inv_ref"
-                            );
-                          }}
-                        >
-                          <SelectTrigger className="bg-white border border-gray-300">
-                            <SelectValue placeholder="Select Payment">
-                              {row.invoicePSub_inv_ref || "Select Payment"}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent className="bg-white border border-gray-300">
-                            {PaymentAmount?.map((status, index) => (
-                              <SelectItem
-                                key={index}
-                                value={status.invoice_ref}
-                              >
-                                <div className="flex flex-col">
-                                  <span className="font-bold text-sm">
-                                    {status.invoice_ref}
-                                  </span>
-                                  <span className="text-gray-600 text-xs">
-                                    Amount (USD): {status.invoice_i_value_usd}
-                                  </span>
-                                  <span className="text-gray-600 text-xs">
-                                    Balance: {status.balance}
-                                  </span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
 
-                        <div className="absolute top-2 left-0">
-                          <Button
-                            variant="ghost"
-                            onClick={() => removeRow(rowIndex)}
-                            disabled={invoiceData.length === 1}
-                            className="text-red-500"
-                            type="button"
-                          >
-                            <MinusCircle className="h-4 w-4" />
-                          </Button>
-                        </div>
+                <TableBody>
+                  {formData.subs?.map((row, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell>
+                        {itemData?.data?.find(
+                          (i) => String(i.id) === String(row.invoiceSub_item_id)
+                        )?.item_brand_name || "-"}
                       </TableCell>
-                      <TableCell className="px-4 py-2">
-                        <Input
-                          className="bg-white border border-gray-300"
-                          value={row.invoicePSub_amt_adv}
-                          onChange={(e) =>
-                            handlePaymentChange(
-                              e,
-                              rowIndex,
-                              "invoicePSub_amt_adv"
+
+                      <TableCell>
+                        {activePurchaseItemOther?.data?.find(
+                          (b) =>
+                            String(b.id) === String(row.invoiceSub_batch_no)
+                        )?.purchaseSub_batch_no || "-"}
+                      </TableCell>
+
+                      <TableCell>
+                        {row.invoiceSub_manufacture_date
+                          ? moment(row.invoiceSub_manufacture_date).format(
+                              "DD-MM-YYYY"
                             )
-                          }
-                          placeholder="Enter Amount Adv"
-                        />
+                          : "-"}
                       </TableCell>
-                      <TableCell className="px-4 py-2">
-                        <Input
-                          className="bg-white border border-gray-300"
-                          value={row.invoicePSub_amt_dp}
-                          onChange={(e) =>
-                            handlePaymentChange(
-                              e,
-                              rowIndex,
-                              "invoicePSub_amt_dp"
+
+                      <TableCell>
+                        {row.invoiceSub_expire_date
+                          ? moment(row.invoiceSub_expire_date).format(
+                              "DD-MM-YYYY"
                             )
-                          }
-                          placeholder="Enter Amount DP"
-                        />
+                          : "-"}
                       </TableCell>
-                      <TableCell className="px-4 py-2">
-                        <Input
-                          className="bg-white border border-gray-300"
-                          value={row.invoicePSub_amt_da}
-                          onChange={(e) =>
-                            handlePaymentChange(
-                              e,
-                              rowIndex,
-                              "invoicePSub_amt_da"
-                            )
-                          }
-                          placeholder="Enter Amount DA"
-                        />
+
+                      <TableCell>{row.invoiceSub_qnty || "-"}</TableCell>
+                      <TableCell>{row.invoiceSub_mrp || "-"}</TableCell>
+                      <TableCell>
+                        {row.invoiceSub_selling_rate || "-"}
                       </TableCell>
-                      <TableCell className="px-4 py-2">
-                        <Input
-                          className="bg-white border border-gray-300"
-                          value={row.invoicePSub_bank_c}
-                          onChange={(e) =>
-                            handlePaymentChange(
-                              e,
-                              rowIndex,
-                              "invoicePSub_bank_c"
-                            )
-                          }
-                          placeholder="Enter Bank Name"
-                        />
-                      </TableCell>
-                      <TableCell className="px-4 py-2">
-                        <Input
-                          className="bg-white border border-gray-300"
-                          value={row.invoicePSub_discount}
-                          onChange={(e) =>
-                            handlePaymentChange(
-                              e,
-                              rowIndex,
-                              "invoicePSub_discount"
-                            )
-                          }
-                          placeholder="Enter Discount"
-                        />
-                      </TableCell>
-                      <TableCell className="px-4 py-2">
-                        <Input
-                          className="bg-white border border-gray-300"
-                          value={row.invoicePSub_shortage}
-                          onChange={(e) =>
-                            handlePaymentChange(
-                              e,
-                              rowIndex,
-                              "invoicePSub_shortage"
-                            )
-                          }
-                          placeholder="Enter Shortage"
-                        />
-                      </TableCell>
-                      <TableCell className="px-4 py-2">
-                        <Textarea
-                          className="bg-white border border-gray-300"
-                          value={row.invoicePSub_remarks}
-                          onChange={(e) =>
-                            handlePaymentChange(
-                              e,
-                              rowIndex,
-                              "invoicePSub_remarks"
-                            )
-                          }
-                          placeholder="Enter Remarks"
-                        />
-                      </TableCell>
-                      {/* <TableCell className="px-4 py-2 text-right">
-                        <div className="flex justify-end space-x-2">
-                          <Button
-                            variant="ghost"
-                            onClick={() => removeRow(rowIndex)}
-                            disabled={invoiceData.length === 1}
-                            className="text-red-500"
-                            type="button"
-                          >
-                            <MinusCircle className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell> */}
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-              <div className="flex justify-start m-2">
-                <Button
-                  type="button"
-                  onClick={addRow}
-                  className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
+            </Card>
+          </TabsContent>
+          <TabsContent value="packing" className="pt-4">
+            <div className="grid grid-cols-2 gap-4">
+              {/* LEFT – AVAILABLE ITEMS */}
+              {/* LEFT – AVAILABLE ITEMS */}
+              <Card className="p-3">
+                <h3 className="font-semibold mb-2">
+                  Available Items
+                  <span className="text-xs ml-2 text-muted-foreground">
+                    (Adding to Carton {activeCartonIndex + 1})
+                  </span>
+                </h3>
+
+                {availableItems.length === 0 && (
+                  <div className="text-sm text-muted-foreground">
+                    No items available
+                  </div>
+                )}
+
+                {availableItems.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="border p-2 rounded mb-2 text-sm flex justify-between items-center"
+                  >
+                    <div>
+                      <div className="font-medium">
+                        {
+                          itemData?.data?.find(
+                            (i) =>
+                              String(i.id) === String(item.invoiceSub_item_id)
+                          )?.item_brand_name
+                        }
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Qty: {item.invoiceSub_qnty}
+                      </div>
+                    </div>
+
+                    <button
+                      disabled={!canAdd}
+                      className="border px-2 py-1 rounded text-xs disabled:opacity-50"
+                      onClick={() => addItemToCarton(item, activeCartonIndex)}
+                    >
+                      Add
+                    </button>
+                  </div>
+                ))}
+              </Card>
+
+              {/* RIGHT – CARTONS */}
+              <div className="space-y-4">
+                {cartons.map((carton, cartonIndex) => (
+                  <Card
+                    key={cartonIndex}
+                    className={`p-3 space-y-2 cursor-pointer ${
+                      activeCartonIndex === cartonIndex ? "border-primary" : ""
+                    }`}
+                    onClick={() => setActiveCartonIndex(cartonIndex)}
+                  >
+                    {" "}
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        className="border p-2 rounded"
+                        placeholder="Carton No"
+                        value={carton.invoicePackingSub_carton_no}
+                        onChange={(e) => {
+                          const updated = [...cartons];
+                          updated[cartonIndex].invoicePackingSub_carton_no =
+                            e.target.value;
+                          setCartons(updated);
+                        }}
+                      />
+
+                      <input
+                        className="border p-2 rounded"
+                        placeholder="Box Size"
+                        value={carton.invoicePackingSub_box_size}
+                        onChange={(e) => {
+                          const updated = [...cartons];
+                          updated[cartonIndex].invoicePackingSub_box_size =
+                            e.target.value;
+                          setCartons(updated);
+                        }}
+                      />
+                    </div>
+                    {/* ITEMS INSIDE CARTON */}
+                    {carton.items.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="border p-2 rounded flex justify-between text-sm"
+                      >
+                        <span>
+                          {
+                            itemData?.data?.find(
+                              (i) =>
+                                String(i.id) ===
+                                String(item.invoicePackingSub_item_id)
+                            )?.item_brand_name
+                          }
+                        </span>
+
+                        <button
+                          className="text-red-500"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeItemFromCarton(item, cartonIndex);
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </Card>
+                ))}
+
+                <button
+                  onClick={addCarton}
+                  className="border px-3 py-2 rounded w-full"
                 >
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Add
-                </Button>
+                  + Add Carton
+                </button>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex flex-col items-end">
-          <Button
-            type="submit"
-            className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor} flex items-center mt-2`}
-            disabled={createBranchMutation.isPending}
-          >
-            {createBranchMutation.isPending
-              ? "Submitting..."
-              : "Create Payment"}
-          </Button>
-        </div>
-      </form>
-    </Page>
+          </TabsContent>
+        </Tabs>
+      </Card>
+    </>
   );
 };
 
-export default CreatePayment;
+export default InvoiceView;
+"invoiceSub_ref": "CSEI\/TESTERAGILE25-268",
+                "invoiceSub_item_id": 1,
+                "purchase_sub_id": 1,
+                "invoiceSub_qnty": "2.00",
+                "invoiceSub_mrp": "24.00",
+                "invoiceSub_selling_rate": "4.00",
+                "invoiceSub_item_gst": "4.00",
+                "invoiceSub_batch_no": "1",
+                "invoiceSub_manufacture_date": "2026-01-06",
+                "invoiceSub_expire_date": "2026-01-07",
+                "item_hsn_code": "30049099",
+                "item_brand_name": "ACNESTAR GEL (20GM)",
+                "item_generic_name": "CLINDAMYCIN(1%W\/W) + NICOTINAMIDE(4%W\/W)",
+                "item_company_name": "MANKIND"
