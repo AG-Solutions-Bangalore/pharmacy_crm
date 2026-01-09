@@ -136,6 +136,16 @@ const NAVIGATION_CONFIG = [
         url: "/master/cartonbox",
         icon: Users,
       },
+      {
+        title: "Product Description",
+        url: "/master/product-description",
+        icon: Users,
+      },
+      {
+        title: "Duty Drawback",
+        url: "/master/dutydrawback",
+        icon: Users,
+      },
     ],
   },
   {
@@ -151,6 +161,11 @@ const NAVIGATION_CONFIG = [
   {
     title: "Invoice",
     url: "/invoice",
+    icon: Users,
+  },
+  {
+    title: "Invoice Payment",
+    url: "/invoice-payment",
     icon: Users,
   },
   {

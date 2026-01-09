@@ -16,13 +16,18 @@ const SelectField = ({
   optionLabel,
   error,
   required,
+  disabled,
 }) => (
   <div>
     <Label>
       {label} {required ? "*" : ""}
     </Label>
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger>
+    <Select
+      value={value}
+      onValueChange={onChange}
+      disabled={disabled} // ✅ IMPORTANT
+    >
+      <SelectTrigger className={disabled ? "bg-muted cursor-not-allowed" : ""}>
         <SelectValue placeholder={`Select ${label ? label : "Value"}`} />
       </SelectTrigger>
       <SelectContent>

@@ -223,6 +223,7 @@ export const CONTRACT_API = {
 export const INVOICE_API = {
   getlist: "/invoice",
   create: "/invoice",
+  createpacking: "/invoice-packing",
   status: "/panel-fetch-invoice-status",
   geInvoiceNo: "/getInvoiceNo",
   checkInvoiceRef: "/checkInvoiceRef",
@@ -236,7 +237,30 @@ export const INVOICE_API = {
 export const CARTONBOX_API = {
   getlist: "/cartonbox",
   create: "/cartonbox",
+  active: "/activeCartonboxs",
   getById: (id) => `/cartonbox/${id}`,
   updateById: (id) => `/cartonbox/${id}`,
   updateStatus: (id) => `/cartonboxs/${id}/status`,
+};
+export const PRODUCTDESCRIPTION_API = {
+  getlist: "/product-description",
+  create: "/product-description",
+  getById: (id) => `/product-description/${id}`,
+  updateById: (id) => `/product-description/${id}`,
+  updateStatus: (id) => `/product-descriptions/${id}/status`,
+};
+export const DUTYDRAWBACK_API = {
+  getlist: "/getDutyDrawback/Pending",
+  getById: (id) => `/getDutyDrawback/Pending/${id}`,
+  updateById: (id) => `/updateDutyDrawback/${id}`,
+};
+export const PAYMENT_API = {
+  getlist: "/invoice-payment",
+  create: "/invoice-payment",
+  paymentamount: "/getInvoicePaymentAmount",
+  status: "/getInvoicePaymentStatus",
+  getById: (id) => `/invoice-payment/${id}`,
+  updateById: (id) => `/invoice-payment/${id}`,
+  DeleteById: (id) => `/invoice-payment/${id}`,
+  deletePaymentSUb: (id) => `/deleteinvoicePaymentSub/${id}`,
 };

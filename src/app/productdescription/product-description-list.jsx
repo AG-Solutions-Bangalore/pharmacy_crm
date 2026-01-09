@@ -2,17 +2,18 @@ import ApiErrorPage from "@/components/api-error/api-error";
 import DataTable from "@/components/common/data-table";
 import ToggleStatus from "@/components/common/status-toggle";
 import LoadingBar from "@/components/loader/loading-bar";
-import { BANK_API } from "@/constants/apiConstants";
+import { PRODUCTDESCRIPTION_API } from "@/constants/apiConstants";
 import useDebounce from "@/hooks/useDebounce";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 import { useMemo, useState } from "react";
-import BankForm from "./bank-form";
+import ProductDescriptionForm from "./product-description-form";
 
-const BankList = () => {
+const ProductDescriptionList = () => {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search);
+
   const params = useMemo(
     () => ({
       page: pageIndex + 1,
@@ -21,35 +22,37 @@ const BankList = () => {
     }),
     [pageIndex, pageSize, debouncedSearch]
   );
+
   const { data, isLoading, isError, refetch } = useGetApiMutation({
-    url: BANK_API.getlist,
-    queryKey: ["bank-list", pageIndex],
+    url: PRODUCTDESCRIPTION_API.getlist,
+    queryKey: ["product-description-list", pageIndex],
     params,
   });
+
   const apiData = data?.data;
 
   const [open, setOpen] = useState(false);
 
   const columns = [
     {
-      header: "Company",
-      accessorKey: "branch_short",
+      header: "Product Name",
+      accessorKey: "product_name",
     },
     {
-      header: "Bank Name",
-      accessorKey: "bank_name",
+      header: "HSN Code",
+      accessorKey: "product_hsn",
     },
     {
-      header: "Account No",
-      accessorKey: "bank_acc_no",
+      header: "Description",
+      accessorKey: "product_description",
     },
     {
       header: "Status",
       cell: ({ row }) => (
         <ToggleStatus
-          initialStatus={row.original.bank_status}
-          apiUrl={BANK_API.updateStatus(row.original.id)}
-          payloadKey="bank_status"
+          initialStatus={row.original.product_status}
+          apiUrl={PRODUCTDESCRIPTION_API.updateStatus(row.original.id)}
+          payloadKey="product_status"
           onSuccess={refetch}
         />
       ),
@@ -57,7 +60,7 @@ const BankList = () => {
     {
       header: "Actions",
       cell: ({ row }) => (
-        <BankForm editId={row.original.id} onSuccess={refetch} />
+        <ProductDescriptionForm editId={row.original.id} onSuccess={refetch} />
       ),
     },
   ];
@@ -71,10 +74,8 @@ const BankList = () => {
         data={apiData?.data || []}
         columns={columns}
         pageSize={pageSize}
-        searchPlaceholder="Search bank..."
-        toolbarRight={
-          <BankForm open={open} setOpen={setOpen} onSuccess={refetch} />
-        }
+        searchPlaceholder="Search product..."
+        toolbarRight={<ProductDescriptionForm open={open} setOpen={setOpen} />}
         serverPagination={{
           pageIndex,
           pageCount: apiData?.last_page ?? 1,
@@ -88,4 +89,4 @@ const BankList = () => {
   );
 };
 
-export default BankList;
+export default ProductDescriptionList;
