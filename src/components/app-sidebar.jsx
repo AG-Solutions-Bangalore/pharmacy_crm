@@ -148,6 +148,7 @@ const NAVIGATION_CONFIG = [
       },
     ],
   },
+
   {
     title: "Purchase",
     url: "/purchase",
@@ -167,6 +168,28 @@ const NAVIGATION_CONFIG = [
     title: "Invoice Payment",
     url: "/invoice-payment",
     icon: Users,
+  },
+  {
+    title: "Report",
+    url: "#",
+    icon: Settings,
+    items: [
+      {
+        title: "Stock",
+        url: "/report/stock",
+        icon: Users,
+      },
+      {
+        title: "Sales Account",
+        url: "/report/sales-accounts",
+        icon: Users,
+      },
+      {
+        title: "Drawback Report",
+        url: "/report/dutydrawback",
+        icon: Users,
+      },
+    ],
   },
   {
     title: "User Management",

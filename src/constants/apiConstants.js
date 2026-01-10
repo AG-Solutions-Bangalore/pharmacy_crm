@@ -233,6 +233,7 @@ export const INVOICE_API = {
   updateById: (id) => `/invoice/${id}`,
   updateStatus: (id) => `/invoices/${id}/status`,
   deleteSubs: (id) => `/deleteinvoiceSub/${id}`,
+  deletePackingSubs: (id) => `/deleteinvoicePackingSub/${id}`,
 };
 export const CARTONBOX_API = {
   getlist: "/cartonbox",
@@ -263,4 +264,9 @@ export const PAYMENT_API = {
   updateById: (id) => `/invoice-payment/${id}`,
   DeleteById: (id) => `/invoice-payment/${id}`,
   deletePaymentSUb: (id) => `/deleteinvoicePaymentSub/${id}`,
+};
+export const REPORT_API = {
+  salesreport: "/sales-accounts-report",
+  drawbackreport: "/drawback-report",
+  stockreport: "/stock-report",
 };

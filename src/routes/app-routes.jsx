@@ -53,6 +53,9 @@ import ProductDescriptionList from "@/app/productdescription/product-description
 import DutyDrawbackList from "@/app/dutydrawback/dutydrawback-list";
 import InvoicePaymentList from "@/app/invoicepayment/invoicepayment-list";
 import InvoicePaymentForm from "@/app/invoicepayment/invoice-payment-form";
+import SalesAccountsReport from "@/app/report/salesreport/salesreport";
+import DutyDrawbackReport from "@/app/report/dutydrawbackreport/dutydrawbackreport";
+import StockReport from "@/app/report/stockreport/stcokreport";
 
 function AppRoutes() {
   return (
@@ -462,6 +465,30 @@ function AppRoutes() {
             element={
               <Suspense fallback={<LoadingBar />}>
                 <InvoicePaymentForm />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/report/sales-accounts"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <SalesAccountsReport />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/report/dutydrawback"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <DutyDrawbackReport />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/report/stock"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <StockReport />
               </Suspense>
             }
           />

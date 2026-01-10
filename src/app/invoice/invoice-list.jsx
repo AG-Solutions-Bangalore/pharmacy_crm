@@ -90,6 +90,11 @@ const InvoiceList = () => {
           <InvoicePackingCreate
             onClick={() => navigate(`/invoicepacking/${row.original.id}`)}
           />
+          <InvoicePackingCreate
+            onClick={() =>
+              navigate(`/invoicepacking/${row.original.id}?isEdit=true`)
+            }
+          />
         </>
       ),
     },
