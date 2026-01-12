@@ -1,22 +1,21 @@
-import React, { useRef, useState } from "react";
-import moment from "moment";
-import { Button } from "@/components/ui/button";
 import Field from "@/components/SelectField/Field";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
-import { useApiMutation } from "@/hooks/useApiMutation";
 import { REPORT_API } from "@/constants/apiConstants";
+import { useApiMutation } from "@/hooks/useApiMutation";
 import {
-  Calendar,
   Download,
   Eye,
   FileSpreadsheet,
-  Printer,
+  Printer
 } from "lucide-react";
+import moment from "moment";
+import React, { useRef, useState } from "react";
+import { toast } from "sonner";
 
-import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { useReactToPrint } from "react-to-print";
+import * as XLSX from "xlsx";
 
 const DutyDrawbackReport = () => {
   const { trigger, loading } = useApiMutation();
@@ -28,7 +27,6 @@ const DutyDrawbackReport = () => {
   const [reportData, setReportData] = useState([]);
   const printRef = useRef();
 
-  // Group data by branch
   const groupedByBranch = reportData.reduce((acc, row) => {
     if (!acc[row.branch_name]) {
       acc[row.branch_name] = [];

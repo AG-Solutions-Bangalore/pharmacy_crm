@@ -185,7 +185,7 @@ const NAVIGATION_CONFIG = [
         icon: Users,
       },
       {
-        title: "Drawback Report",
+        title: "DrawBack Report",
         url: "/report/dutydrawback",
         icon: Users,
       },

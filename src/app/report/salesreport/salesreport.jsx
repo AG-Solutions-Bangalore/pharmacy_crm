@@ -126,6 +126,26 @@ const SalesAccountsReport = () => {
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
     documentTitle: "Sales Accounts Report",
+    pageStyle: `
+      @page {
+      size: auto;
+ margin: 3mm 3mm 3mm 3mm;
+        border: 0px solid black;
+      
+    }
+    @media print {
+      body {
+        border: 0px solid red;
+        margin: 1mm;
+        padding: 1mm 1mm 1mm 1mm;
+        min-height: 100vh;
+      }
+      .print-hide {
+        display: none;
+      }
+     
+    }
+    `,
   });
 
   const fetchReport = async () => {
@@ -209,6 +229,17 @@ const SalesAccountsReport = () => {
 
       {reportData.length > 0 && (
         <div ref={printRef} className="mt-4 overflow-x-auto">
+          <div className="hidden print:block">
+            <div className="flex justify-between mb-4">
+              <h2 className="text-2xl">Sales Accounts Report</h2>
+              <div className="flex">
+                <div className="mr-2">
+                  From :{moment(fromDate).format("DD MMM YYYY")}
+                </div>
+                <div>To :{moment(toDate).format("DD MMM YYYY")}</div>
+              </div>
+            </div>
+          </div>
           <table className="w-full text-xs border-collapse border border-black">
             <tbody>
               {Object.entries(groupedByBranch).map(

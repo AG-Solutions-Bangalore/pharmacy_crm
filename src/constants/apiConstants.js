@@ -223,7 +223,7 @@ export const CONTRACT_API = {
 export const INVOICE_API = {
   getlist: "/invoice",
   create: "/invoice",
-  createpacking: "/invoice-packing",
+  createpacking: "/invoice-packingss",
   status: "/panel-fetch-invoice-status",
   geInvoiceNo: "/getInvoiceNo",
   checkInvoiceRef: "/checkInvoiceRef",

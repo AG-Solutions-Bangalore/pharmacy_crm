@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Edit, FilePlus2, SquarePlus } from "lucide-react";
+import { Edit, Eye, FilePlus2, SquarePlus } from "lucide-react";
 import { forwardRef } from "react";
 import { useSelector } from "react-redux";
 import { checkPermission } from "./permisssion";
@@ -1063,6 +1063,7 @@ export const InvoiceEdit = forwardRef(({ onClick, className }, ref) => {
       className={className}
       variant="ghost"
       size="icon"
+      title="Edit Invoice"
     >
       <Edit className="h-4 w-4 text-black" />
     </Button>
@@ -1088,6 +1089,7 @@ export const InvoiceDocument = forwardRef(({ onClick, className }, ref) => {
       className={className}
       variant="ghost"
       size="icon"
+      title="Update Document"
     >
       <FilePlus2 className="h-4 w-4 text-black" />
     </Button>
@@ -1120,14 +1122,93 @@ export const InvoicePackingCreate = forwardRef(
         size="icon"
         className={className}
         onClick={onClick}
+        title="Create Invoice Packing "
       >
         <SquarePlus className="h-4 w-4" />
       </Button>
     );
   }
 );
+/////// MASTER – InvoicePackingEdit
+export const InvoicePackingEdit = forwardRef(({ onClick, className }, ref) => {
+  const userId = useSelector((state) => state.auth.user?.id);
+  const buttonPermissions = useSelector(
+    (state) => state.permissions.buttonPermissions
+  );
 
-InvoicePackingCreate.page = "Invoice";
+  if (
+    !checkPermission(String(userId), "InvoicePackingEdit", buttonPermissions)
+  ) {
+    return null;
+  }
+
+  return (
+    <Button
+      ref={ref}
+      onClick={onClick}
+      className={className}
+      variant="ghost"
+      size="icon"
+      title="Edit Invoice Packing "
+    >
+      <Edit className="h-4 w-4 text-black" />
+    </Button>
+  );
+});
+
+InvoicePackingEdit.page = "Invoice";
+/////// MASTER – InvoiceExport
+export const InvoiceExport = forwardRef(({ onClick, className }, ref) => {
+  const userId = useSelector((state) => state.auth.user?.id);
+  const buttonPermissions = useSelector(
+    (state) => state.permissions.buttonPermissions
+  );
+
+  if (!checkPermission(String(userId), "InvoiceExport", buttonPermissions)) {
+    return null;
+  }
+
+  return (
+    <Button
+      ref={ref}
+      onClick={onClick}
+      className={className}
+      variant="ghost"
+      size="icon"
+      title="Export Invoice"
+    >
+      <Eye className="h-4 w-4 text-black" />
+    </Button>
+  );
+});
+
+InvoiceExport.page = "Invoice";
+/////// MASTER – InvoicePacking
+export const InvoicePacking = forwardRef(({ onClick, className }, ref) => {
+  const userId = useSelector((state) => state.auth.user?.id);
+  const buttonPermissions = useSelector(
+    (state) => state.permissions.buttonPermissions
+  );
+
+  if (!checkPermission(String(userId), "InvoicePacking", buttonPermissions)) {
+    return null;
+  }
+
+  return (
+    <Button
+      ref={ref}
+      onClick={onClick}
+      className={className}
+      variant="ghost"
+      size="icon"
+      title="Packing Invoice"
+    >
+      <Eye className="h-4 w-4 text-black" />
+    </Button>
+  );
+});
+
+InvoicePacking.page = "Invoice";
 /////// MASTER – CartonBox
 export const CartonBoxCreate = forwardRef(({ onClick, className }, ref) => {
   const userId = useSelector((state) => state.auth.user?.id);
@@ -1351,6 +1432,9 @@ export default {
   InvoiceEdit,
   InvoiceDocument,
   InvoicePackingCreate,
+  InvoicePackingEdit,
+  InvoiceExport,
+  InvoicePacking,
   CartonBoxCreate,
   CartonBoxEdit,
   ProductDescriptionCreate,

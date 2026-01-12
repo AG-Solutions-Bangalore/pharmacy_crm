@@ -24,6 +24,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 const INITIAL_STATE = { subs: [], subs1: [] };
 
 const InvoiceView = () => {
@@ -46,11 +54,15 @@ const InvoiceView = () => {
   const [cartonPrefix, setCartonPrefix] = useState("AGS");
   const [newCarton, setNewCarton] = useState({ carton_no: "", box_size: "" });
   const [subToDelete, setSubToDelete] = useState(null);
+  const [validationResult, setValidationResult] = useState([]);
+
   const {
     trigger: Deletetrigger,
     loading: loadingdelete,
     deleteerror,
   } = useApiMutation();
+  const [openQtyDialog, setOpenQtyDialog] = useState(false);
+
   useEffect(() => {
     if (!id) return;
     (async () => {
@@ -339,48 +351,89 @@ const InvoiceView = () => {
 
       return name.toLowerCase().includes(searchItem.toLowerCase());
     });
+  const validateQuantities = () => {
+    const requiredQtyMap = {};
+    const packedQtyMap = {};
 
-  const handleSubmit = async () => {
+    // Required quantities (from invoice)
+    formData.subs.forEach((sub) => {
+      const key = String(sub.id);
+      requiredQtyMap[key] =
+        (requiredQtyMap[key] || 0) + Number(sub.invoiceSub_qnty || 0);
+    });
+
+    // Packed quantities (from cartons)
+    cartons.forEach((carton) => {
+      carton.items.forEach((row) => {
+        const key = String(row.invoiceSub_id);
+        packedQtyMap[key] =
+          (packedQtyMap[key] || 0) + Number(row.invoicePackingSub_qnty || 0);
+      });
+    });
+
+    const results = [];
+
+    Object.keys(requiredQtyMap).forEach((invoiceSubId) => {
+      const requiredQty = requiredQtyMap[invoiceSubId] || 0;
+      const packedQty = packedQtyMap[invoiceSubId] || 0;
+
+      const sub = formData.subs.find(
+        (s) => String(s.id) === String(invoiceSubId)
+      );
+
+      let status = "ok";
+      if (packedQty < requiredQty) status = "mismatch";
+      if (packedQty > requiredQty) status = "extra";
+
+      results.push({
+        itemId: invoiceSubId,
+        itemName: `${sub?.item_brand_name || "Item"} (Batch ${
+          sub?.invoiceSub_batch_no || "-"
+        })`,
+        contractQty: requiredQty,
+        enteredQty: packedQty,
+        status,
+      });
+    });
+
+    const hasIssue = results.some((r) => r.status !== "ok");
+
+    if (hasIssue) {
+      setValidationResult(results);
+      setOpenQtyDialog(true);
+      return false;
+    }
+
+    return true;
+  };
+  const validateCartons = () => {
+    for (let i = 0; i < cartons.length; i++) {
+      const carton = cartons[i];
+
+      // ❌ No items in carton
+      if (!Array.isArray(carton.items) || carton.items.length === 0) {
+        toast.error(`Add at least one item in Carton ${i + 1}`);
+        setActiveCartonIndex(i);
+        return false;
+      }
+
+      // ❌ Gross weight missing
+      if (
+        carton.gross_weight === "" ||
+        carton.gross_weight === null ||
+        Number(carton.gross_weight) <= 0
+      ) {
+        toast.error(`Enter Gross Weight for Carton ${i + 1}`);
+        setActiveCartonIndex(i);
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const submitInvoice = async () => {
     try {
-      if (!formData?.subs?.length) {
-        toast.error("No items found");
-        return;
-      }
-
-      const requiredQtyMap = {};
-      formData.subs.forEach((sub) => {
-        const key = sub.id;
-        requiredQtyMap[key] =
-          (requiredQtyMap[key] || 0) + Number(sub.invoiceSub_qnty || 0);
-      });
-
-      const packedQtyMap = {};
-      cartons.forEach((carton) => {
-        carton.items.forEach((row) => {
-          const key = row.invoiceSub_id;
-          packedQtyMap[key] =
-            (packedQtyMap[key] || 0) + Number(row.invoicePackingSub_qnty || 0);
-        });
-      });
-
-      for (const invoiceSubId in requiredQtyMap) {
-        const requiredQty = requiredQtyMap[invoiceSubId] || 0;
-        const packedQty = packedQtyMap[invoiceSubId] || 0;
-
-        if (requiredQty !== packedQty) {
-          const sub = formData.subs.find(
-            (s) => String(s.id) === String(invoiceSubId)
-          );
-
-          toast.error(
-            `${sub?.item_brand_name || "Item"} (Batch ${
-              sub?.invoiceSub_batch_no
-            }) quantity mismatch. Required: ${requiredQty}, Packed: ${packedQty}`
-          );
-          return;
-        }
-      }
-
       const subs1 = cartons.flatMap((carton) =>
         carton.items.map((row) => ({
           invoicePackingSub_ref: row.invoicePackingSub_ref,
@@ -423,6 +476,22 @@ const InvoiceView = () => {
     } catch (err) {
       toast.error(err?.message || "Something went wrong");
     }
+  };
+  const handleSubmit = async () => {
+    const hasSubs = Array.isArray(formData?.subs) && formData.subs.length > 0;
+    const hasCartonItems = Array.isArray(cartons?.items)
+      ? cartons.items.length > 0
+      : Array.isArray(cartons) && cartons.length > 0;
+
+    if (!hasSubs || !hasCartonItems) {
+      toast.error("No items found");
+      return;
+    }
+    if (!validateCartons()) return;
+
+    if (!validateQuantities()) return;
+
+    submitInvoice();
   };
   const confirmDelete = async () => {
     if (!subToDelete) return;
@@ -726,19 +795,18 @@ const InvoiceView = () => {
                                 </td>
                                 <td className="px-3 py-2">
                                   <input
-                                    type="text"
-                                    inputMode="decimal"
+                                    type="number"
+                                    min={0}
                                     value={row.invoicePackingSub_qnty}
                                     className="border rounded px-2 py-1 w-full focus:outline-none focus:ring-2 focus:ring-primary"
                                     onChange={(e) => {
                                       const v = e.target.value;
-                                      if (/^\d*\.?\d*$/.test(v)) {
-                                        handleItemQtyChange(
-                                          cartonIndex,
-                                          row.row_id,
-                                          v
-                                        );
-                                      }
+
+                                      handleItemQtyChange(
+                                        cartonIndex,
+                                        row.row_id,
+                                        v
+                                      );
                                     }}
                                   />
                                 </td>
@@ -799,6 +867,60 @@ const InvoiceView = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <Dialog open={openQtyDialog} onOpenChange={setOpenQtyDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Quantity Validation</DialogTitle>
+            <DialogDescription>
+              Some items have quantity differences. Please review before
+              submitting.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 max-h-80 overflow-auto">
+            {validationResult.map((row) => (
+              <div
+                key={row.itemId}
+                className="flex items-center justify-between border rounded-md p-3"
+              >
+                <div>
+                  <p className="font-medium">{row.itemName}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Required: {row.contractQty} | Packed: {row.enteredQty}
+                  </p>
+                </div>
+
+                {row.status === "ok" && (
+                  <span className="text-green-600 font-bold">✔</span>
+                )}
+
+                {row.status === "mismatch" && (
+                  <span className="text-red-600 font-bold">✖</span>
+                )}
+
+                {row.status === "extra" && (
+                  <span className="text-orange-600 font-bold">⚠</span>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <DialogFooter className="flex justify-between">
+            <Button variant="outline" onClick={() => setOpenQtyDialog(false)}>
+              Cancel
+            </Button>
+
+            <Button
+              onClick={() => {
+                setOpenQtyDialog(false);
+                submitInvoice();
+              }}
+            >
+              Skip & Submit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

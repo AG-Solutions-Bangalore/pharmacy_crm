@@ -37,7 +37,7 @@ export const sidebarData = {
     { name: "Duty Drawback", url: "/master/dutydrawback" },
     { name: "Invoice Payment", url: "/invoice-payment" },
     { name: "Sales Account", url: "/report/sales-accounts" },
-    { name: "Drawback Report", url: "/report/dutydrawback" },
+    { name: "DrawBack Report", url: "/report/dutydrawback" },
     { name: "Stock", url: "/report/stock" },
   ],
   userManagement: [

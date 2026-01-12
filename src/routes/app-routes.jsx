@@ -56,6 +56,8 @@ import InvoicePaymentForm from "@/app/invoicepayment/invoice-payment-form";
 import SalesAccountsReport from "@/app/report/salesreport/salesreport";
 import DutyDrawbackReport from "@/app/report/dutydrawbackreport/dutydrawbackreport";
 import StockReport from "@/app/report/stockreport/stcokreport";
+import ExportInvoice from "@/app/invoice/export-invoice";
+import PackingInvoice from "@/app/invoice/packing-invoice";
 
 function AppRoutes() {
   return (
@@ -417,6 +419,22 @@ function AppRoutes() {
             element={
               <Suspense fallback={<LoadingBar />}>
                 <InvoiceDocumentForm />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/invoice/export/:id"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <ExportInvoice />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/packing/invoice/:id"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <PackingInvoice />
               </Suspense>
             }
           />

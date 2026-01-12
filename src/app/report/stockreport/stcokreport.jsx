@@ -29,7 +29,6 @@ const StockReport = () => {
   const [reportData, setReportData] = useState([]);
   const printRef = useRef();
 
-  // Group data by brand name
   const groupedByBrand = reportData.reduce((acc, row) => {
     if (!acc[row.item_brand_name]) {
       acc[row.item_brand_name] = [];
@@ -41,11 +40,9 @@ const StockReport = () => {
   const downloadExcel = (data, fileName) => {
     const workbook = XLSX.utils.book_new();
 
-    // Create worksheet data with brand grouping
     const worksheetData = [];
 
     Object.entries(data).forEach(([brandName, rows]) => {
-      // Add brand header row
       worksheetData.push({
         Brand: `Brand: ${brandName}`,
         "Generic Name": "",
@@ -57,7 +54,6 @@ const StockReport = () => {
         "Closing Stock": "",
       });
 
-      // Add brand data rows
       rows.forEach((row) => {
         worksheetData.push({
           Brand: "",
@@ -70,8 +66,6 @@ const StockReport = () => {
           "Closing Stock": row.closing_stock,
         });
       });
-
-      // Calculate totals for this brand
       const totals = rows.reduce(
         (sum, row) => ({
           opening: sum.opening + parseFloat(row.opening_stock || 0),
@@ -82,7 +76,6 @@ const StockReport = () => {
         { opening: 0, purchase: 0, sale: 0, closing: 0 }
       );
 
-      // Add total row
       worksheetData.push({
         Brand: "",
         "Generic Name": "",
@@ -94,7 +87,6 @@ const StockReport = () => {
         "Closing Stock": totals.closing.toFixed(2),
       });
 
-      // Add empty row between brands
       worksheetData.push({
         Brand: "",
         "Generic Name": "",
@@ -109,16 +101,15 @@ const StockReport = () => {
 
     const worksheet = XLSX.utils.json_to_sheet(worksheetData);
 
-    // Set column widths
     worksheet["!cols"] = [
-      { wch: 30 }, // Brand
-      { wch: 40 }, // Generic Name
-      { wch: 25 }, // Company
-      { wch: 15 }, // Batch No
-      { wch: 15 }, // Opening Stock
-      { wch: 15 }, // Purchase
-      { wch: 15 }, // Sale
-      { wch: 15 }, // Closing Stock
+      { wch: 30 },
+      { wch: 40 },
+      { wch: 25 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 15 },
     ];
 
     XLSX.utils.book_append_sheet(workbook, worksheet, "Stock Report");
@@ -138,6 +129,26 @@ const StockReport = () => {
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
     documentTitle: "Stock Report",
+    pageStyle: `
+      @page {
+      size: auto;
+ margin: 3mm 3mm 3mm 3mm;
+        border: 0px solid black;
+      
+    }
+    @media print {
+      body {
+        border: 0px solid red;
+        margin: 1mm;
+        padding: 1mm 1mm 1mm 1mm;
+        min-height: 100vh;
+      }
+      .print-hide {
+        display: none;
+      }
+     
+    }
+    `,
   });
 
   const fetchReport = async () => {
@@ -173,7 +184,6 @@ const StockReport = () => {
     downloadExcel(groupedByBrand, "Stock_Report");
   };
 
-  // Calculate totals for each brand
   const calculateBrandTotals = (rows) => {
     return rows.reduce(
       (sum, row) => ({
@@ -234,6 +244,17 @@ const StockReport = () => {
 
       {reportData.length > 0 && (
         <div ref={printRef} className="mt-4 overflow-x-auto">
+          <div className="hidden print:block">
+            <div className="flex justify-between mb-4">
+              <h2 className="text-2xl">Stock Report</h2>
+              <div className="flex">
+                <div className="mr-2">
+                  From :{moment(fromDate).format("DD MMM YYYY")}
+                </div>
+                <div>To :{moment(toDate).format("DD MMM YYYY")}</div>
+              </div>
+            </div>
+          </div>
           <table className="w-full text-xs border-collapse border border-black">
             <tbody>
               {Object.entries(groupedByBrand).map(
@@ -242,7 +263,6 @@ const StockReport = () => {
 
                   return (
                     <React.Fragment key={brandIndex}>
-                      {/* Brand Header Row - Above Table Headers */}
                       <tr>
                         <td
                           colSpan={8}
@@ -252,7 +272,6 @@ const StockReport = () => {
                         </td>
                       </tr>
 
-                      {/* Table Headers */}
                       <tr className="bg-gray-100">
                         <th className="border border-black px-2 py-2">
                           Generic Name

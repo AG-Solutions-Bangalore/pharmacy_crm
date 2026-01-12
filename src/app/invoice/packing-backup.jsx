@@ -12,13 +12,25 @@ import { useQueryClient } from "@tanstack/react-query";
 import { FileText, Package, Trash2, Weight } from "lucide-react";
 import moment from "moment";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-
-const INITIAL_STATE = { subs: [] };
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+const INITIAL_STATE = { subs: [], subs1: [] };
 
 const InvoiceView = () => {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const isEdit = searchParams.get("isEdit") === "true";
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const navigate = useNavigate();
   const { trigger: fetchData, loading, error } = useApiMutation();
   const [formData, setFormData] = useState(INITIAL_STATE);
@@ -33,7 +45,12 @@ const InvoiceView = () => {
   const [activeCartonIndex, setActiveCartonIndex] = useState(0);
   const [cartonPrefix, setCartonPrefix] = useState("AGS");
   const [newCarton, setNewCarton] = useState({ carton_no: "", box_size: "" });
-
+  const [subToDelete, setSubToDelete] = useState(null);
+  const {
+    trigger: Deletetrigger,
+    loading: loadingdelete,
+    deleteerror,
+  } = useApiMutation();
   useEffect(() => {
     if (!id) return;
     (async () => {
@@ -47,15 +64,74 @@ const InvoiceView = () => {
           ? moment(data.invoice_date).format("DD-MM-YYYY")
           : "",
       });
-      setAvailableItems(
-        data.subs.map((item, index) => ({
-          ...item,
-          row_id: `${item.id}_${index}`,
-          invoiceSub_id: item.id,
-        }))
-      );
+
+      const allItems = data.subs.map((item, index) => ({
+        ...item,
+        row_id: `${item.id}_${index}`,
+        invoiceSub_id: item.id,
+      }));
+      if (isEdit && data.subs1 && data.subs1.length > 0) {
+        const cartonMap = {};
+
+        data.subs1.forEach((packingItem) => {
+          const cartonNo = packingItem.invoicePackingSub_carton_no;
+
+          if (!cartonMap[cartonNo]) {
+            cartonMap[cartonNo] = {
+              carton_no: cartonNo,
+              box_size: packingItem.invoicePackingSub_box_size,
+              box_weight: Number(
+                cartonboxData?.data?.find(
+                  (c) =>
+                    String(c.id) ===
+                    String(packingItem.invoicePackingSub_box_size)
+                )?.cartonbox_weight || 0
+              ),
+              gross_weight: packingItem.invoicePackingSub_gross_weight || "",
+              net_weight: packingItem.invoicePackingSub_net_weight || "",
+              items: [],
+            };
+          }
+
+          const matchingSub = data.subs.find(
+            (sub) =>
+              sub.purchase_sub_id === packingItem.purchase_sub_id &&
+              sub.invoiceSub_batch_no === packingItem.invoicePackingSub_batch_no
+          );
+
+          cartonMap[cartonNo].items.push({
+            id: packingItem.id,
+            row_id: `${matchingSub?.id}_${Date.now()}_${Math.random()}`,
+            invoicePackingSub_ref: packingItem.invoicePackingSub_ref,
+            invoicePackingSub_carton_no:
+              packingItem.invoicePackingSub_carton_no,
+            invoicePackingSub_box_size: packingItem.invoicePackingSub_box_size,
+            invoicePackingSub_item_id: packingItem.invoicePackingSub_item_id,
+            invoicePackingSub_batch_no: packingItem.invoicePackingSub_batch_no,
+            invoicePackingSub_manufacture_date:
+              packingItem.invoicePackingSub_manufacture_date,
+            invoicePackingSub_expire_date:
+              packingItem.invoicePackingSub_expire_date,
+            invoicePackingSub_qnty: packingItem.invoicePackingSub_qnty,
+            invoicePackingSub_mrp: packingItem.invoicePackingSub_mrp,
+            invoicePackingSub_item_gst: packingItem.invoicePackingSub_item_gst,
+            invoicePackingSub_net_weight:
+              packingItem.invoicePackingSub_net_weight,
+            invoicePackingSub_gross_weight:
+              packingItem.invoicePackingSub_gross_weight,
+            invoicePackingSub_selling_price:
+              packingItem.invoicePackingSub_selling_price,
+            purchase_sub_id: packingItem.purchase_sub_id,
+            invoiceSub_id: matchingSub?.id,
+          });
+        });
+
+        setCartons(Object.values(cartonMap));
+      }
+
+      setAvailableItems(allItems);
     })();
-  }, [id]);
+  }, [id, isEdit]);
 
   const getPackedQtyMap = () => {
     const map = {};
@@ -305,8 +381,6 @@ const InvoiceView = () => {
         }
       }
 
-      toast.success("All quantities matched successfully!");
-      console.log(cartons, "cartons");
       const subs1 = cartons.flatMap((carton) =>
         carton.items.map((row) => ({
           invoicePackingSub_ref: row.invoicePackingSub_ref,
@@ -322,8 +396,8 @@ const InvoiceView = () => {
           invoicePackingSub_item_gst: String(
             row.invoicePackingSub_item_gst || "0"
           ),
-          invoicePackingSub_net_weight: carton.net_weight || "0",
-          invoicePackingSub_gross_weight: carton.gross_weight || "0",
+          invoicePackingSub_net_weight: String(carton.net_weight || "0"),
+          invoicePackingSub_gross_weight: String(carton.gross_weight || "0"),
           invoicePackingSub_selling_price: String(
             row.invoicePackingSub_selling_price || "0"
           ),
@@ -340,7 +414,7 @@ const InvoiceView = () => {
       });
 
       if (res?.code === 201) {
-        toast.success(res?.message || "Invoice saved successfully");
+        toast.success(res?.message || "Invoice packing saved successfully");
         queryClient.invalidateQueries(["invoice-list"]);
         navigate("/invoice");
       } else {
@@ -350,7 +424,37 @@ const InvoiceView = () => {
       toast.error(err?.message || "Something went wrong");
     }
   };
-
+  const confirmDelete = async () => {
+    if (!subToDelete) return;
+    try {
+      const res = await Deletetrigger({
+        url: INVOICE_API.deletePackingSubs(subToDelete.id),
+        method: "DELETE",
+      });
+      if (res.code == 201) {
+        toast.success(res.message || "Sub item deleted successfully");
+        setCartons((prev) =>
+          prev.map((carton, i) =>
+            i === subToDelete.index
+              ? {
+                  ...carton,
+                  items: carton.items.filter(
+                    (item) => item.id !== subToDelete.id
+                  ),
+                }
+              : carton
+          )
+        );
+      } else {
+        toast.error(err.message || "Failed to delete sub item");
+      }
+    } catch (err) {
+      toast.error(err.message || "Failed to delete sub item");
+    } finally {
+      setDeleteConfirmOpen(false);
+      setSubToDelete(null);
+    }
+  };
   if (error) return <ApiErrorPage />;
   if (loading) return <LoadingBar />;
 
@@ -638,16 +742,33 @@ const InvoiceView = () => {
                                     }}
                                   />
                                 </td>
-                                <td className="px-3 py-2 text-center">
-                                  <button
-                                    className="text-red-500 text-xs"
-                                    onClick={() =>
-                                      removeItemFromCarton(row, cartonIndex)
-                                    }
-                                  >
-                                    Remove
-                                  </button>
-                                </td>
+                                {carton.items.length > 1 && (
+                                  <td className="px-3 py-2 text-center">
+                                    {isEdit && row.id ? (
+                                      <button
+                                        className="text-destructive hover:bg-destructive/10 p-1 rounded transition-colors"
+                                        onClick={() => {
+                                          setSubToDelete({
+                                            index: cartonIndex,
+                                            id: row.id,
+                                          });
+                                          setDeleteConfirmOpen(true);
+                                        }}
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    ) : (
+                                      <button
+                                        className="text-red-500 text-xs"
+                                        onClick={() =>
+                                          removeItemFromCarton(row, cartonIndex)
+                                        }
+                                      >
+                                        Remove
+                                      </button>
+                                    )}
+                                  </td>
+                                )}
                               </tr>
                             ))}
                           </tbody>
@@ -661,6 +782,23 @@ const InvoiceView = () => {
           </div>
         </Card>
       </div>
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              packing.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
