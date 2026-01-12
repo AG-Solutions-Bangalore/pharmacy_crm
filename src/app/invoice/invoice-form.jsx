@@ -698,7 +698,6 @@ const InvoiceForm = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  console.log(contractSubs, "contractSubs");
   const validateBatchQuantities = () => {
     const contractQtyMap = {};
     const itemQtyMap = {};
