@@ -41,6 +41,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useQueryClient } from "@tanstack/react-query";
+import { Calendar22 } from "@/components/ui/calendar-22";
 
 const SUB_NUMBER_FIELDS = [
   "purchaseSub_qnty",
@@ -302,14 +303,12 @@ const PurchaseForm = () => {
                 error={errors.branch_short}
               />
 
-              <Field
+              <Calendar22
                 label="Date *"
-                type="date"
                 value={formData.purchase_date}
                 onChange={(v) => handleChange("purchase_date", v)}
                 error={errors.purchase_date}
               />
-
               <SelectField
                 label="Vendor "
                 required
@@ -436,9 +435,7 @@ const PurchaseForm = () => {
 
                       {/* MFG */}
                       <TableCell>
-                        <Field
-                          hideLabel
-                          type="date"
+                        <Calendar22
                           value={sub.purchaseSub_manufacture_date}
                           onChange={(v) =>
                             handleSubChange(
@@ -455,9 +452,7 @@ const PurchaseForm = () => {
 
                       {/* EXP */}
                       <TableCell>
-                        <Field
-                          hideLabel
-                          type="date"
+                        <Calendar22
                           value={sub.purchaseSub_expire_date}
                           onChange={(v) =>
                             handleSubChange(i, "purchaseSub_expire_date", v)

@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Calendar22 } from "@/components/ui/calendar-22";
 import { Card } from "@/components/ui/card";
 import {
   Dialog,
@@ -1218,16 +1219,17 @@ const InvoiceForm = () => {
                     disabled
                     error={errors.invoice_ref}
                   />
-                  <Field
+
+                  <Calendar22
                     label="Invoice Date *"
-                    type="date"
+                    required
                     value={formData.invoice_date}
                     onChange={(v) => handleChange("invoice_date", v)}
                     error={errors.invoice_date}
                   />
-                  <Field
+
+                  <Calendar22
                     label="Contract Date *"
-                    type="date"
                     value={formData.contract_date}
                     onChange={(v) => handleChange("contract_date", v)}
                     error={errors.contract_date}
@@ -1471,8 +1473,8 @@ const InvoiceForm = () => {
                       <TableHead className="w-[25%]">Item *</TableHead>
                       <TableHead className="w-[12%]">Batch *</TableHead>
 
-                      <TableHead className="w-[15%]">Manufacture *</TableHead>
-                      <TableHead className="w-[13%]">Expire *</TableHead>
+                      <TableHead className="w-[15%]">Mfg. Date *</TableHead>
+                      <TableHead className="w-[13%]">Exp. Date *</TableHead>
                       <TableHead className="w-[10%]">Qty *</TableHead>
                       <TableHead className="w-[12%]">MRP *</TableHead>
                       <TableHead className="w-[13%]">Selling *</TableHead>
@@ -1538,9 +1540,8 @@ const InvoiceForm = () => {
                         </TableCell>
 
                         <TableCell>
-                          <Field
-                            hideLabel
-                            type="date"
+                          <Calendar22
+                            label=""
                             value={row.invoiceSub_manufacture_date ?? ""}
                             onChange={(v) =>
                               handleSubChange(
@@ -1556,9 +1557,8 @@ const InvoiceForm = () => {
                         </TableCell>
 
                         <TableCell>
-                          <Field
-                            hideLabel
-                            type="date"
+                          <Calendar22
+                            label=""
                             value={row.invoiceSub_expire_date ?? ""}
                             onChange={(v) =>
                               handleSubChange(idx, "invoiceSub_expire_date", v)

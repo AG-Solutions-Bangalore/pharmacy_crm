@@ -1155,6 +1155,8 @@ export const InvoicePackingCreate = forwardRef(
     );
   }
 );
+InvoicePackingCreate.page = "Invoice";
+
 /////// MASTER – InvoicePackingEdit
 export const InvoicePackingEdit = forwardRef(({ onClick, className }, ref) => {
   const userId = useSelector((state) => state.auth.user?.id);
@@ -1409,6 +1411,31 @@ export const InvoicePaymentEdit = forwardRef(({ onClick, className }, ref) => {
 });
 
 InvoicePaymentEdit.page = "Invoice Payment";
+/////// MASTER – DutyDrawbackEdit
+export const DutyDrawbackEdit = forwardRef(({ onClick, className }, ref) => {
+  const userId = useSelector((state) => state.auth.user?.id);
+  const buttonPermissions = useSelector(
+    (state) => state.permissions.buttonPermissions
+  );
+
+  if (!checkPermission(String(userId), "DutyDrawbackEdit", buttonPermissions)) {
+    return null;
+  }
+
+  return (
+    <Button
+      ref={ref}
+      onClick={onClick}
+      className={className}
+      variant="ghost"
+      size="icon"
+    >
+      <Edit className="h-4 w-4 text-black" />
+    </Button>
+  );
+});
+
+DutyDrawbackEdit.page = "Duty Drawback";
 export default {
   BuyerCreate,
   EditBuyer,
@@ -1468,4 +1495,5 @@ export default {
   ProductDescriptionEdit,
   InvoicePaymentCreate,
   InvoicePaymentEdit,
+  DutyDrawbackEdit,
 };

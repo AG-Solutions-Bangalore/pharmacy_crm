@@ -58,6 +58,7 @@ import ExportInvoice from "@/app/invoice/export-invoice";
 import PackingInvoice from "@/app/invoice/packing-invoice";
 import InvoicePackingPage from "@/app/invoice/InvoicePackingPage";
 import ContractExport from "@/app/contract/contaract-view";
+import MonthWiseReport from "@/app/report/monthwisereport/monthwisereport";
 
 function AppRoutes() {
   return (
@@ -515,6 +516,14 @@ function AppRoutes() {
             element={
               <Suspense fallback={<LoadingBar />}>
                 <StockReport />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/report/monthwise"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <MonthWiseReport />
               </Suspense>
             }
           />

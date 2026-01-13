@@ -35,9 +35,7 @@ export default function LoginForm({
         <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-2">
           Welcome back
         </h1>
-        <p className="text-muted-foreground text-lg mb-10">
-          Continue your certification journey with AIA
-        </p>
+        <p className="text-muted-foreground text-lg mb-10">description </p>
       </motion.div>
 
       <form onSubmit={handleSubmit}>

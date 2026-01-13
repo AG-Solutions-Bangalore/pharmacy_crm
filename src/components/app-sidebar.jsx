@@ -189,6 +189,11 @@ const NAVIGATION_CONFIG = [
         url: "/report/dutydrawback",
         icon: Users,
       },
+      {
+        title: "MonthWise Report",
+        url: "/report/monthwise",
+        icon: Users,
+      },
     ],
   },
   {

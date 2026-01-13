@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { useQueryClient } from "@tanstack/react-query";
 import { PAYMENT_API } from "@/constants/apiConstants";
+import { Calendar22 } from "@/components/ui/calendar-22";
 
 /* ================= CONSTANTS ================= */
 
@@ -270,15 +271,12 @@ const InvoicePaymentForm = () => {
       <Card className="p-4 space-y-6">
         {/* ================= HEADER FIELDS ================= */}
         <div className="grid grid-cols-4 gap-4">
-          <Field
-            label="Payment Date"
-            type="date"
-            required
+          <Calendar22
+            label="Payment Date *"
             value={formData.invoiceP_date}
             onChange={(v) => handleChange("invoiceP_date", v)}
             error={errors.invoiceP_date}
           />
-
           <SelectField
             label="Company"
             required
@@ -290,14 +288,12 @@ const InvoicePaymentForm = () => {
             error={errors.branch_short}
           />
 
-          <Field
+          <Calendar22
             label="Value Date *"
-            type="date"
             value={formData.invoiceP_v_date}
             onChange={(v) => handleChange("invoiceP_v_date", v)}
             error={errors.invoiceP_v_date}
           />
-
           <Field
             label="USD Amount *"
             value={formData.invoiceP_usd_amount}

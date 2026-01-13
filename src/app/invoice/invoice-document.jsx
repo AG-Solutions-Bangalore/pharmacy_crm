@@ -4,6 +4,7 @@ import LoadingBar from "@/components/loader/loading-bar";
 import Field from "@/components/SelectField/Field";
 import SelectField from "@/components/SelectField/SelectField";
 import { Button } from "@/components/ui/button";
+import { Calendar22 } from "@/components/ui/calendar-22";
 import { Card, CardContent } from "@/components/ui/card";
 import { INVOICE_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
@@ -234,15 +235,13 @@ const InvoiceDocumentForm = () => {
               <div>
                 <Field
                   label="BL No"
-                  type="date"
                   value={formData.invoice_bl_no}
                   onChange={(v) => handleChange("invoice_bl_no", v)}
                 />
               </div>
               <div>
-                <Field
+                <Calendar22
                   label="Invoice Date"
-                  type="date"
                   value={formData.invoice_bl_date}
                   onChange={(v) => handleChange("invoice_bl_date", v)}
                 />
@@ -256,9 +255,8 @@ const InvoiceDocumentForm = () => {
                 />
               </div>
               <div>
-                <Field
+                <Calendar22
                   label="Shipping Bill Date"
-                  type="date"
                   value={formData.invoice_sb_date}
                   onChange={(v) => handleChange("invoice_sb_date", v)}
                 />
@@ -392,9 +390,8 @@ const InvoiceDocumentForm = () => {
               </div>
 
               <div>
-                <Field
+                <Calendar22
                   label="Let Export date"
-                  type="date"
                   value={formData.invoice_let_exports_date}
                   onChange={(v) => handleChange("invoice_let_exports_date", v)}
                   placeholder="Enter Let Export date"
@@ -402,9 +399,8 @@ const InvoiceDocumentForm = () => {
               </div>
 
               <div>
-                <Field
+                <Calendar22
                   label="Etd Date"
-                  type="date"
                   value={formData.invoice_etd_date}
                   onChange={(v) => handleChange("invoice_etd_date", v)}
                   placeholder="Enter  Etd Date"
@@ -412,9 +408,8 @@ const InvoiceDocumentForm = () => {
               </div>
 
               <div>
-                <Field
+                <Calendar22
                   label="Eta Date"
-                  type="date"
                   value={formData.invoice_eta_date}
                   onChange={(v) => handleChange("invoice_eta_date", v)}
                   placeholder="Enter  Eta Date"

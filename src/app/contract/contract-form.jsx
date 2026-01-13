@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Calendar22 } from "@/components/ui/calendar-22";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
@@ -851,9 +852,9 @@ const ContractForm = () => {
                       {formData.branch_address}
                     </span>
                   </div>
-                  <Field
+
+                  <Calendar22
                     label="Contract Date *"
-                    type="date"
                     value={formData.contract_date}
                     onChange={(v) => handleChange("contract_date", v)}
                     error={errors.contract_date}
@@ -954,13 +955,12 @@ const ContractForm = () => {
                   optionLabel="containerSize"
                   error={errors.contract_container_size}
                 />
-                <Field
+
+                <Calendar22
                   label="Shipment Date"
-                  type="date"
                   value={formData.contract_ship_date}
                   onChange={(v) => handleChange("contract_ship_date", v)}
                 />
-
                 <SelectField
                   label="GR Code"
                   required
@@ -1124,8 +1124,8 @@ const ContractForm = () => {
                       <TableHead className="w-[25%]">Item *</TableHead>
                       <TableHead className="w-[15%]">Qty *</TableHead>
                       <TableHead className="w-[15%]">Batch </TableHead>
-                      <TableHead className="w-[15%]">Manufacture </TableHead>
-                      <TableHead className="w-[10%]">Expire </TableHead>
+                      <TableHead className="w-[15%]">Mfg. Date </TableHead>
+                      <TableHead className="w-[10%]">Exp Date </TableHead>
                       <TableHead className="w-[10%]">MRP </TableHead>
                       <TableHead className="w-[15%]">Selling *</TableHead>
                       <TableHead className="w-[60px] text-center">
@@ -1184,9 +1184,8 @@ const ContractForm = () => {
                           />
                         </TableCell>
                         <TableCell>
-                          <Field
-                            hideLabel
-                            type="date"
+                          <Calendar22
+                            label=""
                             value={row.contractSub_manufacture_date ?? ""}
                             onChange={(v) =>
                               handleSubChange(
@@ -1198,9 +1197,8 @@ const ContractForm = () => {
                           />
                         </TableCell>
                         <TableCell>
-                          <Field
-                            hideLabel
-                            type="date"
+                          <Calendar22
+                            label=""
                             value={row.contractSub_expire_date ?? ""}
                             onChange={(v) =>
                               handleSubChange(idx, "contractSub_expire_date", v)

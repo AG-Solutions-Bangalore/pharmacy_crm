@@ -17,6 +17,8 @@ import {
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { useReactToPrint } from "react-to-print";
+import { Calendar22 } from "@/components/ui/calendar-22";
+import LoadingBar from "@/components/loader/loading-bar";
 
 const SalesAccountsReport = () => {
   const { trigger, loading } = useApiMutation();
@@ -183,6 +185,8 @@ const SalesAccountsReport = () => {
 
   return (
     <>
+      {loading && <LoadingBar />}
+
       <Card className="p-6 space-y-6">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg">
@@ -198,11 +202,14 @@ const SalesAccountsReport = () => {
 
         {/* Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-          <Field type="date" value={fromDate} onChange={setFromDate} />
+          <Calendar22
+            label="From Date"
+            value={fromDate}
+            onChange={setFromDate}
+          />
+          <Calendar22 label="To Date" value={toDate} onChange={setToDate} />
 
-          <Field type="date" value={toDate} onChange={setToDate} />
-
-          <div className="space-x-4 col-span-2">
+          <div className="space-x-4 col-span-2 mt-5">
             <Button onClick={fetchReport} disabled={loading} className="gap-2">
               <Eye className="w-4 h-4" />
               View

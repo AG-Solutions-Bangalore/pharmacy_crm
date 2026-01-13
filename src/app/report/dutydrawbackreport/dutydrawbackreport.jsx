@@ -3,12 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { REPORT_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
-import {
-  Download,
-  Eye,
-  FileSpreadsheet,
-  Printer
-} from "lucide-react";
+import { Download, Eye, FileSpreadsheet, Printer } from "lucide-react";
 import moment from "moment";
 import React, { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -16,6 +11,9 @@ import { toast } from "sonner";
 import { saveAs } from "file-saver";
 import { useReactToPrint } from "react-to-print";
 import * as XLSX from "xlsx";
+import { Calendar } from "@/components/ui/calendar";
+import { Calendar22 } from "@/components/ui/calendar-22";
+import LoadingBar from "@/components/loader/loading-bar";
 
 const DutyDrawbackReport = () => {
   const { trigger, loading } = useApiMutation();
@@ -136,6 +134,26 @@ const DutyDrawbackReport = () => {
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
     documentTitle: "Duty Drawback Report",
+    pageStyle: `
+      @page {
+      size: auto;
+ margin: 3mm 3mm 3mm 3mm;
+        border: 0px solid black;
+      
+    }
+    @media print {
+      body {
+        border: 0px solid red;
+        margin: 1mm;
+        padding: 1mm 1mm 1mm 1mm;
+        min-height: 100vh;
+      }
+      .print-hide {
+        display: none;
+      }
+     
+    }
+    `,
   });
 
   const fetchReport = async () => {
@@ -173,6 +191,8 @@ const DutyDrawbackReport = () => {
 
   return (
     <>
+      {loading && <LoadingBar />}
+
       <Card className="p-6 space-y-6">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg">
@@ -188,11 +208,14 @@ const DutyDrawbackReport = () => {
 
         {/* Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-          <Field type="date" value={fromDate} onChange={setFromDate} />
+          <Calendar22
+            label="From Date"
+            value={fromDate}
+            onChange={setFromDate}
+          />
+          <Calendar22 label="To Date" value={toDate} onChange={setToDate} />
 
-          <Field type="date" value={toDate} onChange={setToDate} />
-
-          <div className="space-x-4 col-span-2">
+          <div className="space-x-4 col-span-2 mt-5">
             <Button onClick={fetchReport} disabled={loading} className="gap-2">
               <Eye className="w-4 h-4" />
               View
@@ -219,6 +242,17 @@ const DutyDrawbackReport = () => {
 
       {reportData.length > 0 && (
         <div ref={printRef} className="mt-4 overflow-x-auto">
+          <div className="hidden print:block">
+            <div className="flex justify-between mb-4">
+              <h2 className="text-2xl">Duty Drawback Report</h2>
+              <div className="flex">
+                <div className="mr-2">
+                  From :{moment(fromDate).format("DD MMM YYYY")}
+                </div>
+                <div>To :{moment(toDate).format("DD MMM YYYY")}</div>
+              </div>
+            </div>
+          </div>
           <table className="w-full text-xs border-collapse border border-black">
             <tbody>
               {Object.entries(groupedByBranch).map(

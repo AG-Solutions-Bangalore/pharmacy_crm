@@ -39,6 +39,7 @@ export const sidebarData = {
     { name: "Sales Account", url: "/report/sales-accounts" },
     { name: "DrawBack Report", url: "/report/dutydrawback" },
     { name: "Stock", url: "/report/stock" },
+    { name: "MonthWise Report", url: "/report/monthwise" },
   ],
   userManagement: [
     { name: "User Management", url: "/userManagement" },
