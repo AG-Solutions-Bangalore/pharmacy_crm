@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Edit, Eye, FilePlus2, SquarePlus } from "lucide-react";
+import { Edit, Eye, FilePlus2, Printer, SquarePlus } from "lucide-react";
 import { forwardRef } from "react";
 import { useSelector } from "react-redux";
 import { checkPermission } from "./permisssion";
@@ -1024,6 +1024,32 @@ export const ContractEdit = forwardRef(({ onClick, className }, ref) => {
 });
 
 ContractEdit.page = "Contract";
+/////// MASTER – ContractExport
+export const ContractExport = forwardRef(({ onClick, className }, ref) => {
+  const userId = useSelector((state) => state.auth.user?.id);
+  const buttonPermissions = useSelector(
+    (state) => state.permissions.buttonPermissions
+  );
+
+  if (!checkPermission(String(userId), "ContractExport", buttonPermissions)) {
+    return null;
+  }
+
+  return (
+    <Button
+      ref={ref}
+      onClick={onClick}
+      className={className}
+      variant="ghost"
+      size="icon"
+      title="Contact View"
+    >
+      <Printer className="h-4 w-4 text-black" />
+    </Button>
+  );
+});
+
+ContractExport.page = "Contract";
 /////// MASTER – InvoiceCreate
 export const InvoiceCreate = forwardRef(({ onClick, className }, ref) => {
   const userId = useSelector((state) => state.auth.user?.id);
@@ -1175,9 +1201,9 @@ export const InvoiceExport = forwardRef(({ onClick, className }, ref) => {
       className={className}
       variant="ghost"
       size="icon"
-      title="Export Invoice"
+      title="Invoice View"
     >
-      <Eye className="h-4 w-4 text-black" />
+      <Printer className="h-4 w-4 text-black" />
     </Button>
   );
 });
@@ -1428,6 +1454,7 @@ export default {
   PurchaseEdit,
   ContractCreate,
   ContractEdit,
+  ContractExport,
   InvoiceCreate,
   InvoiceEdit,
   InvoiceDocument,

@@ -1,26 +1,29 @@
 import ApiErrorPage from "@/components/api-error/api-error";
 import LoadingBar from "@/components/loader/loading-bar";
-import { INVOICE_API } from "@/constants/apiConstants";
+import { Button } from "@/components/ui/button";
+import { CONTRACT_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
+import { Printer } from "lucide-react";
 import moment from "moment";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-const ExportInvoice = () => {
+import { useReactToPrint } from "react-to-print";
+const ContractExport = () => {
   const { id } = useParams();
-
-  const [invoicePackingData, setInvoicePackingData] = useState(null);
+  const printRef = useRef();
+  const [contractData, setContractData] = useState(null);
   const [branchData, setBranchData] = useState({});
-  const [invoiceSubData, setInvoiceSubData] = useState([]);
+  const [contractSubData, setContractSubData] = useState([]);
   const { trigger: fetchData, loading, error } = useApiMutation();
 
   const fetchContractData = async () => {
     try {
       const response = await fetchData({
-        url: INVOICE_API.getById(id),
+        url: CONTRACT_API.getById(id),
       });
-      setInvoicePackingData(response.data);
+      setContractData(response.data);
       setBranchData(response.branch);
-      setInvoiceSubData(response.data.subs);
+      setContractSubData(response.data.subs);
     } catch (error) {
       console.warn(error);
     }
@@ -28,74 +31,89 @@ const ExportInvoice = () => {
   useEffect(() => {
     fetchContractData();
   }, [id]);
-  const groupedItems = invoiceSubData.reduce((acc, item) => {
-    if (!acc[item.invoiceSub_item_id]) {
-      acc[item.invoiceSub_item_id] = [];
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: "Sales Accounts Report",
+    pageStyle: `
+      @page {
+      size: auto;
+ margin: 3mm 3mm 3mm 3mm;
+        border: 0px solid black;
+      
     }
-    acc[item.invoiceSub_item_id].push(item);
-    return acc;
-  }, {});
-
+    @media print {
+      body {
+        border: 0px solid red;
+        margin: 1mm;
+        padding: 1mm 1mm 1mm 1mm;
+        min-height: 100vh;
+      }
+      .print-hide {
+        display: none;
+      }
+     
+    }
+    `,
+  });
   const safe = (value) => value || "\u00A0";
-  const grandTotalQty = Object.values(groupedItems).reduce(
-    (sum, items) =>
-      sum + items.reduce((s, it) => s + Number(it.invoiceSub_qnty || 0), 0),
-    0
-  );
 
-  const grandTotalValue = Object.values(groupedItems).reduce(
-    (sum, items) =>
-      sum +
-      items.reduce(
-        (s, it) =>
-          s +
-          Number(it.invoiceSub_qnty || 0) *
-            Number(it.invoiceSub_selling_rate || 0),
-        0
-      ),
-    0
-  );
+  const grandTotalQty = contractSubData.reduce((total, item) => {
+    return total + Number(item.contractSub_qnty || 0);
+  }, 0);
+  const grandTotalValue = contractSubData.reduce((total, item) => {
+    const qty = Number(item.contractSub_qnty || 0);
+    const rate = Number(item.contractSub_selling_rate || 0);
+    return total + qty * rate;
+  }, 0);
+
   const totalFOB = grandTotalValue;
-  const totalFreight = Number(invoicePackingData?.invoice_freight_usd || 0);
+  const totalFreight = Number(contractData?.contract_freight_charges || 0);
   const totalCNF = totalFOB + totalFreight;
   if (error) return <ApiErrorPage />;
   return (
     <div className="relative">
       {loading && <LoadingBar />}
-
-      <div className="font-normal">
-        {invoicePackingData && (
+      <Button
+        variant="outline"
+        onClick={handlePrint}
+        className="gap-2 absolute top-0 right-12"
+      >
+        <Printer className="w-4 h-4" />
+        Print
+      </Button>
+      <div className="font-normal" ref={printRef}>
+        {contractData && (
           <>
             <div className="max-w-4xl mx-auto p-4 ">
               <div className="border-t border-r border-l border-black max-w-screen-lg mx-auto text-sm">
                 <div>
                   <div className="border-b border-black px-8 py-2  text-center text-sm font-bold  ">
-                    EXPORT INVOICE
+                    CONTRACT
                   </div>
                 </div>
-                {/* //SECTION___1 */}
+
                 <div className="grid grid-cols-12 border-b border-black text-[12px]">
                   <div className="col-span-6 border-r border-black">
                     <div className="p-2">
                       <p className="font-bold text-[13px]">
-                        {invoicePackingData.branch_name}
+                        {contractData?.branch_name}
                       </p>
 
                       <div className="mt-1">
                         <span className="font-semibold">CORP OFF:</span>{" "}
-                        {branchData.branch_crop_address || ""}
+                        {branchData?.branch_crop_address || ""}
                       </div>
                       <div>
                         <span className="font-semibold">REG OFF:</span>{" "}
-                        {branchData.branch_address || ""}
+                        {branchData?.branch_address || ""}
                       </div>
                       <div>
                         <span className="font-semibold">EMAIL:</span>{" "}
-                        {branchData.branch_email_id || ""}
+                        {branchData?.branch_email_id || ""}
                       </div>
                       <div>
                         <span className="font-semibold">IEC:</span>{" "}
-                        {branchData.branch_iec || ""}
+                        {branchData?.branch_iec || ""}
                       </div>
                     </div>
 
@@ -104,10 +122,10 @@ const ExportInvoice = () => {
                         <p className="font-bold">Consignee:</p>
                         <p className="font-bold">TO ORDER OF:</p>
                         <p className="font-bold">
-                          {invoicePackingData.invoice_consignee}
+                          {contractData.contract_consignee}
                         </p>
                         <div className="mt-1">
-                          {invoicePackingData.invoice_consignee_add}
+                          {contractData.contract_consignee_add}
                         </div>
                       </div>
                     </div>
@@ -116,7 +134,7 @@ const ExportInvoice = () => {
                   <div className="col-span-6  text-[12px]">
                     <div className="grid grid-cols-2 border-b border-black">
                       <div className="border-r border-black px-2 py-0.5 font-bold min-h-[22px]">
-                        Invoice No:
+                        Contract No:
                       </div>
                       <div className="px-2 py-0.5 min-h-[22px] font-bold">
                         {" "}
@@ -127,11 +145,11 @@ const ExportInvoice = () => {
                     {/* Date */}
                     <div className="grid grid-cols-2 border-b border-black">
                       <div className="border-r border-black px-2 py-0.5  min-h-[22px]">
-                        {safe(invoicePackingData?.invoice_ref)}
+                        {safe(contractData?.contract_ref)}
                       </div>
                       <div className="px-2 py-0.5 min-h-[22px]">
-                        {invoicePackingData?.invoice_date
-                          ? moment(invoicePackingData.invoice_date).format(
+                        {contractData?.contract_date
+                          ? moment(contractData.contract_date).format(
                               "DD-MM-YYYY"
                             )
                           : "\u00A0"}
@@ -149,11 +167,9 @@ const ExportInvoice = () => {
 
                     <div className="grid grid-cols-2 border-b border-black">
                       <div className="border-r border-black px-2 py-0.5 min-h-[22px]">
-                        {safe(invoicePackingData?.invoice_precarriage)}
+                        {safe(contractData?.contract_precarriage)}
                       </div>
-                      <div className="px-2 py-0.5 min-h-[22px]">
-                        {safe(invoicePackingData?.place_of_receipt)}
-                      </div>
+                      <div className="px-2 py-0.5 min-h-[22px]">-</div>
                     </div>
                     <div className="grid grid-cols-2 border-b border-black">
                       <div className="border-r border-black px-2 py-0.5 font-bold min-h-[22px]">
@@ -166,10 +182,10 @@ const ExportInvoice = () => {
 
                     <div className="grid grid-cols-2 border-b border-black">
                       <div className="border-r border-black px-2 py-0.5 min-h-[22px]">
-                        {safe(invoicePackingData?.invoice_vessel_flight_no)}
+                        {safe(contractData?.contract_vessel_flight_no)}
                       </div>
                       <div className="px-2 py-0.5 min-h-[22px]">
-                        {safe(invoicePackingData?.invoice_loading)}
+                        {safe(contractData?.contract_loading)}
                       </div>
                     </div>
                     <div className="grid grid-cols-2 border-b border-black">
@@ -183,10 +199,10 @@ const ExportInvoice = () => {
 
                     <div className="grid grid-cols-2 border-b border-black">
                       <div className="border-r border-black px-2 py-0.5 min-h-[22px]">
-                        {safe(invoicePackingData?.invoice_discharge)}
+                        {safe(contractData?.contract_discharge)}
                       </div>
                       <div className="px-2 py-0.5 min-h-[22px]">
-                        {safe(invoicePackingData?.invoice_destination_country)}
+                        {safe(contractData?.contract_destination_country)}
                       </div>
                     </div>
                     <div className="grid grid-cols-2 border-b border-black">
@@ -203,13 +219,13 @@ const ExportInvoice = () => {
                         India
                       </div>
                       <div className="px-2 py-0.5 min-h-[22px]">
-                        {safe(invoicePackingData?.invoice_destination_country)}
+                        {safe(contractData?.contract_destination_country)}
                       </div>
                     </div>
 
                     <div className="px-2 py-2 min-h-[36px]">
                       <p className="font-bold">Terms of Delivery and Payment</p>
-                      <p>{safe(invoicePackingData?.invoice_payment_terms)}</p>
+                      <p>{safe(contractData?.contract_payment_terms)}</p>
                     </div>
                   </div>
                 </div>
@@ -258,78 +274,49 @@ const ExportInvoice = () => {
                     </thead>
 
                     <tbody>
-                      {Object.values(groupedItems).map((items, groupIndex) => {
-                        const first = items[0];
-
+                      {contractSubData.map((items, groupIndex) => {
                         return (
                           <Fragment key={groupIndex}>
                             <tr className="border-t border-black text-[11px]">
                               <td className="border-r border-black px-2">
                                 <p className="font-bold text-[10px]">
-                                  {first.item_brand_name}
+                                  {items.item_brand_name}
                                 </p>
                               </td>
 
                               <td className="border-r border-black px-2  text-[10px]">
-                                {first.item_generic_name}
+                                {items.item_generic_name}
                               </td>
 
                               <td className="border-r border-black px-2  text-center text-[10px]">
-                                {first.item_company_name}
+                                {items.item_company_name}
                               </td>
 
                               {/* Empty columns */}
-                              <td className="border-r border-black"></td>
-                              <td className="border-r border-black"></td>
-                              <td></td>
+                              <td className="border-r border-black  text-center">
+                                {" "}
+                                {items.contractSub_qnty}
+                              </td>
+                              <td className="border-r border-black  text-center">
+                                {" "}
+                                {items.contractSub_selling_rate}
+                              </td>
+                              <td className="text-right px-2">
+                                {" "}
+                                {(
+                                  Number(items.contractSub_qnty) *
+                                  Number(items.contractSub_selling_rate)
+                                ).toFixed(2)}
+                              </td>
                             </tr>
-
-                            {/* BATCH ROWS */}
-                            {items.map((it, i) => (
-                              <tr key={i} className="text-[11px]">
-                                <td className="border-r border-black px-2  text-[10px]">
-                                  Batch : {it.invoiceSub_batch_no}
-                                </td>
-
-                                <td className="border-r border-black px-2  text-[10px]">
-                                  Mfg :{" "}
-                                  {moment(
-                                    it.invoiceSub_manufacture_date
-                                  ).format("MMM-YYYY")}
-                                </td>
-
-                                {/* Exp */}
-                                <td className="border-r border-black px-2  text-[10px] text-center">
-                                  Exp :{" "}
-                                  {moment(it.invoiceSub_expire_date).format(
-                                    "MMM-YYYY"
-                                  )}
-                                </td>
-
-                                <td className="border-r border-black px-2  text-center">
-                                  {it.invoiceSub_qnty}
-                                </td>
-
-                                <td className="border-r border-black px-2  text-center">
-                                  {it.invoiceSub_selling_rate}
-                                </td>
-
-                                <td className="px-2 text-right">
-                                  {(
-                                    Number(it.invoiceSub_qnty) *
-                                    Number(it.invoiceSub_selling_rate)
-                                  ).toFixed(2)}
-                                </td>
-                              </tr>
-                            ))}
                           </Fragment>
                         );
                       })}
                     </tbody>
                     <tfoot>
                       <tr className="border-y border-black text-[12px]">
-                        <td className="border-r border-black px-2  text-right"></td>
-                        <td className="border-r border-black px-2  text-right"></td>
+                        <td className=" px-2  text-right"></td>
+                        <td className=" px-2  text-right"></td>
                         <td className="border-r border-black px-2 text-right"></td>
 
                         <td className="border-r border-black px-2  text-center">
@@ -391,4 +378,4 @@ const ExportInvoice = () => {
   );
 };
 
-export default ExportInvoice;
+export default ContractExport;

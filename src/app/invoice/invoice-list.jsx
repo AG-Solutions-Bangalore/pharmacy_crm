@@ -101,9 +101,6 @@ const InvoiceList = () => {
           <InvoiceExport
             onClick={() => navigate(`/invoice/export/${row.original.id}`)}
           />
-          <InvoicePacking
-            onClick={() => navigate(`/packing/invoice/${row.original.id}`)}
-          />
         </>
       ),
     },

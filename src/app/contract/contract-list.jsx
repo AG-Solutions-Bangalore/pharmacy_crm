@@ -3,6 +3,7 @@ import ApiErrorPage from "@/components/api-error/api-error";
 import {
   ContractCreate,
   ContractEdit,
+  ContractExport,
 } from "@/components/buttoncontrol/button-component";
 import DataTable from "@/components/common/data-table";
 import ToggleStatus from "@/components/common/status-toggle";
@@ -67,9 +68,14 @@ const ContractList = () => {
     {
       header: "Actions",
       cell: ({ row }) => (
-        <ContractEdit
-          onClick={() => navigate(`/contract/edit/${row.original.id}`)}
-        />
+        <>
+          <ContractEdit
+            onClick={() => navigate(`/contract/edit/${row.original.id}`)}
+          />
+          <ContractExport
+            onClick={() => navigate(`/contract/view/${row.original.id}`)}
+          />
+        </>
       ),
     },
   ];

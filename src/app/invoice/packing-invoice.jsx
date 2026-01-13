@@ -1,15 +1,11 @@
 import ApiErrorPage from "@/components/api-error/api-error";
 import LoadingBar from "@/components/loader/loading-bar";
-import { Button } from "@/components/ui/button";
 import { INVOICE_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
-import { Printer } from "lucide-react";
 import moment from "moment";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useReactToPrint } from "react-to-print";
 const PackingInvoice = () => {
-  const containerRef = useRef();
   const { id } = useParams();
 
   const [invoicePackingData, setInvoicePackingData] = useState(null);
@@ -49,62 +45,14 @@ const PackingInvoice = () => {
     return acc;
   }, {});
 
-  const handlePrint = useReactToPrint({
-    content: () => containerRef.current,
-    documentTitle: "Invoice Report",
-    pageStyle: `
-      @page {
-      size: auto;
- margin: 3mm 3mm 3mm 3mm;
-        border: 0px solid black;
-      
-    }
-    @media print {
-      body {
-        border: 0px solid red;
-        margin: 1mm;
-        padding: 1mm 1mm 1mm 1mm;
-        min-height: 100vh;
-      }
-      .print-hide {
-        display: none;
-      }
-     
-    }
-    `,
-  });
   const safe = (v) => (v ? v : "\u00A0");
-  const grandTotalQty = invoiceSubData.reduce(
-    (s, it) => s + Number(it.invoicePackingSub_qnty || 0),
-    0
-  );
-
-  const grandTotalValue = invoiceSubData.reduce(
-    (s, it) =>
-      s +
-      Number(it.invoicePackingSub_qnty || 0) *
-        Number(it.invoicePackingSub_selling_price || 0),
-    0
-  );
-
-  const totalFOB = grandTotalValue;
-  const totalFreight = Number(invoicePackingData?.invoice_freight_usd || 0);
-  const totalCNF = totalFOB + totalFreight;
 
   if (error) return <ApiErrorPage />;
   return (
     <div className="relative">
       {loading && <LoadingBar />}
-      <Button
-        variant="outline"
-        onClick={handlePrint}
-        className="gap-2 absolute top-0 right-12"
-      >
-        <Printer className="w-4 h-4" />
-        Print
-      </Button>
 
-      <div ref={containerRef} className="font-normal">
+      <div className="font-normal">
         {invoicePackingData && (
           <>
             <div className="max-w-4xl mx-auto p-4 ">

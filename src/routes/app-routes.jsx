@@ -1,6 +1,4 @@
 import Login from "@/app/auth/login";
-// import CreateCompany from "@/app/company/create-company";
-// import EditCompany from "@/app/company/edit-company";
 import BagTypeList from "@/app/bagtype/bagtype-list";
 import BankList from "@/app/bank/bank-list";
 import BranchList from "@/app/branch/branch-list";
@@ -58,6 +56,8 @@ import DutyDrawbackReport from "@/app/report/dutydrawbackreport/dutydrawbackrepo
 import StockReport from "@/app/report/stockreport/stcokreport";
 import ExportInvoice from "@/app/invoice/export-invoice";
 import PackingInvoice from "@/app/invoice/packing-invoice";
+import InvoicePackingPage from "@/app/invoice/InvoicePackingPage";
+import ContractExport from "@/app/contract/contaract-view";
 
 function AppRoutes() {
   return (
@@ -391,6 +391,14 @@ function AppRoutes() {
             }
           />
           <Route
+            path="/contract/view/:id"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <ContractExport />
+              </Suspense>
+            }
+          />
+          <Route
             path="/invoice"
             element={
               <Suspense fallback={<LoadingBar />}>
@@ -426,7 +434,7 @@ function AppRoutes() {
             path="/invoice/export/:id"
             element={
               <Suspense fallback={<LoadingBar />}>
-                <ExportInvoice />
+                <InvoicePackingPage />
               </Suspense>
             }
           />

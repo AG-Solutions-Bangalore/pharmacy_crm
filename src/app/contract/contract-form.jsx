@@ -31,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { CONTRACT_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
@@ -746,512 +747,533 @@ const ContractForm = () => {
       />
 
       <Card className="p-4 space-y-6">
-        {step === 1 && (
-          <Card className="p-4 space-y-6">
-            <div className="mb-0">
+        <Tabs
+          defaultValue="form"
+          className="w-full"
+          value={step === 1 ? "form" : "items"}
+          onValueChange={(value) => {
+            if (value === "items") {
+              setStep(2);
+            } else {
+              setStep(1);
+            }
+          }}
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="form">Invoice Details</TabsTrigger>
+            <TabsTrigger value="items">Items</TabsTrigger>
+          </TabsList>
+          <TabsContent value="form" className="pt-4">
+            <Card className="p-4 space-y-6">
+              <div className="mb-0">
+                <div className="grid md:grid-cols-4 gap-4">
+                  <SelectField
+                    label="Buyer"
+                    required
+                    value={formData.contract_buyer}
+                    onChange={(v) => handleSelectChange("contract_buyer", v)}
+                    options={buyerData?.data}
+                    optionKey="buyer_name"
+                    optionLabel="buyer_name"
+                    error={errors.contract_buyer}
+                  />
+
+                  <SelectField
+                    label="Consignee"
+                    required
+                    value={formData.contract_consignee}
+                    onChange={(v) =>
+                      handleSelectChange("contract_consignee", v)
+                    }
+                    options={buyerData?.data}
+                    optionKey="buyer_name"
+                    optionLabel="buyer_name"
+                    error={errors.contract_consignee}
+                  />
+                  <SelectField
+                    label="Company"
+                    required
+                    value={formData.branch_short}
+                    onChange={(v) => handleSelectChange("branch_short", v)}
+                    options={branchData?.data}
+                    optionKey="branch_short"
+                    optionLabel="branch_short"
+                    error={errors.branch_short}
+                  />
+
+                  {!isEdit ? (
+                    <SelectField
+                      label="Contract No "
+                      required
+                      value={formData.contract_no}
+                      onChange={(v) => handleSelectChange("contract_no", v)}
+                      options={contractNoOptions}
+                      optionKey="contract_no"
+                      optionLabel="contract_no"
+                      error={errors.contract_no}
+                    />
+                  ) : (
+                    <Field
+                      label="Contract No"
+                      value={formData.contract_no}
+                      disabled
+                    />
+                  )}
+                </div>
+              </div>
+              <div className="mt-[2px]">
+                <div className="grid md:grid-cols-4 gap-4">
+                  <Textarea
+                    value={formData.contract_buyer_add || ""}
+                    className="text-[9px] bg-white"
+                    onChange={(e) =>
+                      handleChange("contract_buyer_add", e.target.value)
+                    }
+                  />
+
+                  <Textarea
+                    value={formData.contract_consignee_add || ""}
+                    className="text-[9px] bg-white"
+                    onChange={(e) =>
+                      handleChange("contract_consignee_add", e.target.value)
+                    }
+                  />
+
+                  <div
+                    style={{ textAlign: "center" }}
+                    className="bg-white rounded-md border"
+                  >
+                    <span style={{ fontSize: "12px" }}>
+                      {formData.branch_name}
+                    </span>
+                    <br />
+                    <span style={{ fontSize: "9px", display: "block" }}>
+                      {formData.branch_address}
+                    </span>
+                  </div>
+                  <Field
+                    label="Contract Date *"
+                    type="date"
+                    value={formData.contract_date}
+                    onChange={(v) => handleChange("contract_date", v)}
+                    error={errors.contract_date}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <Field
+                  label="Contract Ref *"
+                  value={formData.contract_ref}
+                  disabled
+                  error={errors.contract_ref}
+                />
+                <Field
+                  label="Contract Pono *"
+                  value={formData.contract_pono}
+                  onChange={(v) => handleChange("contract_pono", v)}
+                  error={errors.contract_pono}
+                />
+                <SelectField
+                  label="Product"
+                  required
+                  value={formData.contract_product}
+                  onChange={(v) => handleChange("contract_product", v)}
+                  options={productData?.data}
+                  optionKey="product_name"
+                  optionLabel="product_name"
+                  error={errors.contract_product}
+                />
+
+                <SelectField
+                  label="Port of Loading"
+                  required
+                  value={formData.contract_loading}
+                  onChange={(v) => handleChange("contract_loading", v)}
+                  options={portData?.data}
+                  optionKey="portofLoading"
+                  optionLabel="portofLoading"
+                  error={errors.contract_loading}
+                />
+
+                <SelectField
+                  label="Destination Port"
+                  required
+                  value={formData.contract_destination_port}
+                  onChange={(v) =>
+                    handleSelectChange("contract_destination_port", v)
+                  }
+                  options={countryPortData?.data}
+                  optionKey="country_port"
+                  optionLabel="country_port"
+                  error={errors.contract_destination_port}
+                />
+              </div>
+
+              <div className="grid grid-cols-1  md:grid-cols-6 gap-4">
+                <SelectField
+                  label="Port of Discharge"
+                  required
+                  value={formData.contract_discharge}
+                  onChange={(v) => handleSelectChange("contract_discharge", v)}
+                  options={countryPortData?.data}
+                  optionKey="country_port"
+                  optionLabel="country_port"
+                  error={errors.contract_discharge}
+                />
+
+                <SelectField
+                  label="CIF"
+                  required
+                  value={formData.contract_cif}
+                  onChange={(v) => handleSelectChange("contract_cif", v)}
+                  options={countryPortData?.data}
+                  optionKey="country_port"
+                  optionLabel="country_port"
+                  error={errors.contract_cif}
+                />
+
+                <SelectField
+                  label="Dest Country"
+                  required
+                  value={formData.contract_destination_country}
+                  onChange={(v) =>
+                    handleSelectChange("contract_destination_country", v)
+                  }
+                  options={countryData?.data}
+                  optionKey="country_name"
+                  optionLabel="country_name"
+                  error={errors.contract_destination_country}
+                />
+                <SelectField
+                  label="Container Size"
+                  required
+                  value={formData.contract_container_size}
+                  onChange={(v) => handleChange("contract_container_size", v)}
+                  options={containerData?.data}
+                  optionKey="containerSize"
+                  optionLabel="containerSize"
+                  error={errors.contract_container_size}
+                />
+                <Field
+                  label="Shipment Date"
+                  type="date"
+                  value={formData.contract_ship_date}
+                  onChange={(v) => handleChange("contract_ship_date", v)}
+                />
+
+                <SelectField
+                  label="GR Code"
+                  required
+                  value={formData.contract_gr_code}
+                  onChange={(v) => handleChange("contract_gr_code", v)}
+                  options={grcodeData?.data}
+                  optionKey="product_name"
+                  optionLabel="product_name"
+                  error={errors.contract_gr_code}
+                />
+              </div>
+
               <div className="grid md:grid-cols-4 gap-4">
                 <SelectField
-                  label="Buyer"
+                  label="LUT Code"
                   required
-                  value={formData.contract_buyer}
-                  onChange={(v) => handleSelectChange("contract_buyer", v)}
-                  options={buyerData?.data}
-                  optionKey="buyer_name"
-                  optionLabel="buyer_name"
-                  error={errors.contract_buyer}
+                  value={formData.contract_lut_code}
+                  onChange={(v) => handleChange("contract_lut_code", v)}
+                  error={errors.contract_lut_code}
+                  options={schemeData?.data}
+                  optionKey="scheme_short"
+                  optionLabel="scheme_short"
+                />
+
+                <Field
+                  label="Vessel / Flight No"
+                  value={formData.contract_vessel_flight_no}
+                  onChange={(v) => handleChange("contract_vessel_flight_no", v)}
                 />
 
                 <SelectField
-                  label="Consignee"
-                  required
-                  value={formData.contract_consignee}
-                  onChange={(v) => handleSelectChange("contract_consignee", v)}
-                  options={buyerData?.data}
-                  optionKey="buyer_name"
-                  optionLabel="buyer_name"
-                  error={errors.contract_consignee}
+                  label="Pre-Receipt"
+                  value={formData.contract_prereceipts}
+                  onChange={(v) => handleChange("contract_prereceipts", v)}
+                  options={prereceiptData?.data}
+                  optionKey="prereceipts_name"
+                  optionLabel="prereceipts_name"
                 />
                 <SelectField
-                  label="Company"
-                  required
-                  value={formData.branch_short}
-                  onChange={(v) => handleSelectChange("branch_short", v)}
-                  options={branchData?.data}
-                  optionKey="branch_short"
-                  optionLabel="branch_short"
-                  error={errors.branch_short}
+                  label="Pre-Carriage"
+                  value={formData.contract_precarriage}
+                  onChange={(v) => handleChange("contract_precarriage", v)}
+                  options={precarriageData?.data}
+                  optionKey="precarriage_name"
+                  optionLabel="precarriage_name"
+                />
+              </div>
+
+              <div
+                className={`grid gap-4 ${
+                  isEdit ? "md:grid-cols-5" : "md:grid-cols-4"
+                }`}
+              >
+                <Field
+                  label="Customer Description"
+                  value={formData.contract_product_cust_des}
+                  onChange={(v) => handleChange("contract_product_cust_des", v)}
+                />
+                <Field
+                  label="Freight Charges"
+                  type="number"
+                  value={formData.contract_freight_charges}
+                  onChange={(v) => handleChange("contract_freight_charges", v)}
                 />
 
-                {!isEdit ? (
-                  <SelectField
-                    label="Contract No "
-                    required
-                    value={formData.contract_no}
-                    onChange={(v) => handleSelectChange("contract_no", v)}
-                    options={contractNoOptions}
-                    optionKey="contract_no"
-                    optionLabel="contract_no"
-                    error={errors.contract_no}
-                  />
-                ) : (
-                  <Field
-                    label="Contract No"
-                    value={formData.contract_no}
-                    disabled
-                  />
+                <Field
+                  label="Dollar Rate"
+                  type="number"
+                  value={formData.contract_dollar_rate}
+                  onChange={(v) => handleChange("contract_dollar_rate", v)}
+                />
+
+                <Field
+                  label="Shipment Terms"
+                  value={formData.contract_shipment}
+                  onChange={(v) => handleChange("contract_shipment", v)}
+                />
+                {isEdit && (
+                  <div className="col-span-1">
+                    <Label className="text-sm font-medium">Status</Label>
+
+                    <Select
+                      value={formData.contract_status}
+                      onValueChange={(v) => handleChange("contract_status", v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="Open">
+                          <div className="flex items-center">
+                            <div className="w-2 h-2 rounded-full bg-green-500 mr-2" />
+                            Open
+                          </div>
+                        </SelectItem>
+
+                        <SelectItem value="Close">
+                          <div className="flex items-center">
+                            <div className="w-2 h-2 rounded-full bg-gray-400 mr-2" />
+                            Close
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 )}
               </div>
-            </div>
-            <div className="mt-[2px]">
+
               <div className="grid md:grid-cols-4 gap-4">
-                <Textarea
-                  value={formData.contract_buyer_add || ""}
-                  className="text-[9px] bg-white"
-                  onChange={(e) =>
-                    handleChange("contract_buyer_add", e.target.value)
-                  }
-                />
-
-                <Textarea
-                  value={formData.contract_consignee_add || ""}
-                  className="text-[9px] bg-white"
-                  onChange={(e) =>
-                    handleChange("contract_consignee_add", e.target.value)
-                  }
-                />
-
-                <div
-                  style={{ textAlign: "center" }}
-                  className="bg-white rounded-md border"
-                >
-                  <span style={{ fontSize: "12px" }}>
-                    {formData.branch_name}
-                  </span>
-                  <br />
-                  <span style={{ fontSize: "9px", display: "block" }}>
-                    {formData.branch_address}
-                  </span>
+                <div className="col-span-2">
+                  <Label>Specification 1</Label>
+                  <Textarea
+                    value={formData.contract_specification1 ?? ""}
+                    onChange={(e) =>
+                      handleChange("contract_specification1", e.target.value)
+                    }
+                  />
                 </div>
-                <Field
-                  label="Contract Date *"
-                  type="date"
-                  value={formData.contract_date}
-                  onChange={(v) => handleChange("contract_date", v)}
-                  error={errors.contract_date}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <Field
-                label="Contract Ref *"
-                value={formData.contract_ref}
-                disabled
-                error={errors.contract_ref}
-              />
-              <Field
-                label="Contract Pono *"
-                value={formData.contract_pono}
-                onChange={(v) => handleChange("contract_pono", v)}
-                error={errors.contract_pono}
-              />
-              <SelectField
-                label="Product"
-                required
-                value={formData.contract_product}
-                onChange={(v) => handleChange("contract_product", v)}
-                options={productData?.data}
-                optionKey="product_name"
-                optionLabel="product_name"
-                error={errors.contract_product}
-              />
 
-              <SelectField
-                label="Port of Loading"
-                required
-                value={formData.contract_loading}
-                onChange={(v) => handleChange("contract_loading", v)}
-                options={portData?.data}
-                optionKey="portofLoading"
-                optionLabel="portofLoading"
-                error={errors.contract_loading}
-              />
-
-              <SelectField
-                label="Destination Port"
-                required
-                value={formData.contract_destination_port}
-                onChange={(v) =>
-                  handleSelectChange("contract_destination_port", v)
-                }
-                options={countryPortData?.data}
-                optionKey="country_port"
-                optionLabel="country_port"
-                error={errors.contract_destination_port}
-              />
-            </div>
-
-            <div className="grid grid-cols-1  md:grid-cols-6 gap-4">
-              <SelectField
-                label="Port of Discharge"
-                required
-                value={formData.contract_discharge}
-                onChange={(v) => handleSelectChange("contract_discharge", v)}
-                options={countryPortData?.data}
-                optionKey="country_port"
-                optionLabel="country_port"
-                error={errors.contract_discharge}
-              />
-
-              <SelectField
-                label="CIF"
-                required
-                value={formData.contract_cif}
-                onChange={(v) => handleSelectChange("contract_cif", v)}
-                options={countryPortData?.data}
-                optionKey="country_port"
-                optionLabel="country_port"
-                error={errors.contract_cif}
-              />
-
-              <SelectField
-                label="Dest Country"
-                required
-                value={formData.contract_destination_country}
-                onChange={(v) =>
-                  handleSelectChange("contract_destination_country", v)
-                }
-                options={countryData?.data}
-                optionKey="country_name"
-                optionLabel="country_name"
-                error={errors.contract_destination_country}
-              />
-              <SelectField
-                label="Container Size"
-                required
-                value={formData.contract_container_size}
-                onChange={(v) => handleChange("contract_container_size", v)}
-                options={containerData?.data}
-                optionKey="containerSize"
-                optionLabel="containerSize"
-                error={errors.contract_container_size}
-              />
-              <Field
-                label="Shipment Date"
-                type="date"
-                value={formData.contract_ship_date}
-                onChange={(v) => handleChange("contract_ship_date", v)}
-              />
-
-              <SelectField
-                label="GR Code"
-                required
-                value={formData.contract_gr_code}
-                onChange={(v) => handleChange("contract_gr_code", v)}
-                options={grcodeData?.data}
-                optionKey="product_name"
-                optionLabel="product_name"
-                error={errors.contract_gr_code}
-              />
-            </div>
-
-            <div className="grid md:grid-cols-4 gap-4">
-              <SelectField
-                label="LUT Code"
-                required
-                value={formData.contract_lut_code}
-                onChange={(v) => handleChange("contract_lut_code", v)}
-                error={errors.contract_lut_code}
-                options={schemeData?.data}
-                optionKey="scheme_short"
-                optionLabel="scheme_short"
-              />
-
-              <Field
-                label="Vessel / Flight No"
-                value={formData.contract_vessel_flight_no}
-                onChange={(v) => handleChange("contract_vessel_flight_no", v)}
-              />
-
-              <SelectField
-                label="Pre-Receipt"
-                value={formData.contract_prereceipts}
-                onChange={(v) => handleChange("contract_prereceipts", v)}
-                options={prereceiptData?.data}
-                optionKey="prereceipts_name"
-                optionLabel="prereceipts_name"
-              />
-              <SelectField
-                label="Pre-Carriage"
-                value={formData.contract_precarriage}
-                onChange={(v) => handleChange("contract_precarriage", v)}
-                options={precarriageData?.data}
-                optionKey="precarriage_name"
-                optionLabel="precarriage_name"
-              />
-            </div>
-
-            <div
-              className={`grid gap-4 ${
-                isEdit ? "md:grid-cols-5" : "md:grid-cols-4"
-              }`}
-            >
-              <Field
-                label="Customer Description"
-                value={formData.contract_product_cust_des}
-                onChange={(v) => handleChange("contract_product_cust_des", v)}
-              />
-              <Field
-                label="Freight Charges"
-                type="number"
-                value={formData.contract_freight_charges}
-                onChange={(v) => handleChange("contract_freight_charges", v)}
-              />
-
-              <Field
-                label="Dollar Rate"
-                type="number"
-                value={formData.contract_dollar_rate}
-                onChange={(v) => handleChange("contract_dollar_rate", v)}
-              />
-
-              <Field
-                label="Shipment Terms"
-                value={formData.contract_shipment}
-                onChange={(v) => handleChange("contract_shipment", v)}
-              />
-              {isEdit && (
-                <div className="col-span-1">
-                  <Label className="text-sm font-medium">Status</Label>
-
-                  <Select
-                    value={formData.contract_status}
-                    onValueChange={(v) => handleChange("contract_status", v)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-
-                    <SelectContent>
-                      <SelectItem value="Open">
-                        <div className="flex items-center">
-                          <div className="w-2 h-2 rounded-full bg-green-500 mr-2" />
-                          Open
-                        </div>
-                      </SelectItem>
-
-                      <SelectItem value="Close">
-                        <div className="flex items-center">
-                          <div className="w-2 h-2 rounded-full bg-gray-400 mr-2" />
-                          Close
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="col-span-2">
+                  <Label>Specification 2</Label>
+                  <Textarea
+                    value={formData.contract_specification2 ?? ""}
+                    onChange={(e) =>
+                      handleChange("contract_specification2", e.target.value)
+                    }
+                  />
                 </div>
-              )}
-            </div>
-
-            <div className="grid md:grid-cols-4 gap-4">
-              <div className="col-span-2">
-                <Label>Specification 1</Label>
-                <Textarea
-                  value={formData.contract_specification1 ?? ""}
-                  onChange={(e) =>
-                    handleChange("contract_specification1", e.target.value)
-                  }
-                />
+                <div className="col-span-2">
+                  <SelectField
+                    label="Payment Terms"
+                    required
+                    value={formData.contract_payment_terms}
+                    onChange={(v) => handleChange("contract_payment_terms", v)}
+                    options={paymentTermData?.data}
+                    optionKey="paymentTerms"
+                    optionLabel="paymentTerms"
+                    error={errors.contract_payment_terms}
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label>Remarks</Label>
+                  <Textarea
+                    value={formData.contract_remarks}
+                    onChange={(e) =>
+                      handleChange("contract_remarks", e.target.value)
+                    }
+                  />
+                </div>
               </div>
-
-              <div className="col-span-2">
-                <Label>Specification 2</Label>
-                <Textarea
-                  value={formData.contract_specification2 ?? ""}
-                  onChange={(e) =>
-                    handleChange("contract_specification2", e.target.value)
-                  }
-                />
-              </div>
-              <div className="col-span-2">
-                <SelectField
-                  label="Payment Terms"
-                  required
-                  value={formData.contract_payment_terms}
-                  onChange={(v) => handleChange("contract_payment_terms", v)}
-                  options={paymentTermData?.data}
-                  optionKey="paymentTerms"
-                  optionLabel="paymentTerms"
-                  error={errors.contract_payment_terms}
-                />
-              </div>
-              <div className="col-span-2">
-                <Label>Remarks</Label>
-                <Textarea
-                  value={formData.contract_remarks}
-                  onChange={(e) =>
-                    handleChange("contract_remarks", e.target.value)
-                  }
-                />
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {step === 2 && (
-          <>
-            <Card className="p-0 overflow-hidden rounded-sm">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[25%]">Item *</TableHead>
-                    <TableHead className="w-[15%]">Qty *</TableHead>
-                    <TableHead className="w-[15%]">Batch </TableHead>
-                    <TableHead className="w-[15%]">Manufacture </TableHead>
-                    <TableHead className="w-[10%]">Expire </TableHead>
-                    <TableHead className="w-[10%]">MRP </TableHead>
-                    <TableHead className="w-[15%]">Selling *</TableHead>
-                    <TableHead className="w-[60px] text-center">
-                      Action
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                  {formData.subs.map((row, idx) => (
-                    <TableRow key={row.id}>
-                      {/* ITEM */}
-                      <TableCell>
-                        <SelectField
-                          hideLabel
-                          value={row.contractSub_item_id}
-                          onChange={(v) =>
-                            handleSubChange(idx, "contractSub_item_id", v)
-                          }
-                          options={purchaseitemData?.data || []}
-                          optionKey="id"
-                          optionLabel="item_brand_name"
-                          error={errors[`subs.${idx}.contractSub_item_id`]}
-                        />
-                      </TableCell>
-
-                      {/* QTY */}
-                      <TableCell>
-                        <Field
-                          hideLabel
-                          value={row.contractSub_qnty ?? ""}
-                          onChange={(v) =>
-                            handleSubChange(
-                              idx,
-                              "contractSub_qnty",
-                              v.replace(/[^0-9]/g, "")
-                            )
-                          }
-                          error={errors[`subs.${idx}.contractSub_qnty`]}
-                        />
-                        {!isEdit && (
-                          <span className="font-medium text-[11px]">
-                            Available Quantity:{" "}
-                            <span>{availableQuantity[idx] ?? 0}</span>
-                          </span>
-                        )}
-                      </TableCell>
-
-                      <TableCell>
-                        <Field
-                          hideLabel
-                          value={row.contractSub_batch_no ?? ""}
-                          onChange={(v) =>
-                            handleSubChange(idx, "contractSub_batch_no", v)
-                          }
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Field
-                          hideLabel
-                          type="date"
-                          value={row.contractSub_manufacture_date ?? ""}
-                          onChange={(v) =>
-                            handleSubChange(
-                              idx,
-                              "contractSub_manufacture_date",
-                              v
-                            )
-                          }
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Field
-                          hideLabel
-                          type="date"
-                          value={row.contractSub_expire_date ?? ""}
-                          onChange={(v) =>
-                            handleSubChange(idx, "contractSub_expire_date", v)
-                          }
-                        />
-                      </TableCell>
-                      {/* MRP */}
-                      <TableCell>
-                        <Field
-                          hideLabel
-                          value={row.contractSub_mrp ?? ""}
-                          onChange={(v) =>
-                            handleSubChange(
-                              idx,
-                              "contractSub_mrp",
-                              v.replace(/[^0-9.]/g, "")
-                            )
-                          }
-                        />
-                      </TableCell>
-                      {/* MRP */}
-                      <TableCell>
-                        <Field
-                          hideLabel
-                          value={row.contractSub_selling_rate ?? ""}
-                          onChange={(v) =>
-                            handleSubChange(
-                              idx,
-                              "contractSub_selling_rate",
-                              v.replace(/[^0-9.]/g, "")
-                            )
-                          }
-                          error={errors[`subs.${idx}.contractSub_selling_rate`]}
-                        />
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {formData.subs.length > 1 && (
-                          <Button
-                            size="icon"
-                            variant={row.id ? "destructive" : "secondary"}
-                            onClick={() => {
-                              if (row.id) {
-                                setSubToDelete({ index: idx, id: row.id });
-                                setDeleteConfirmOpen(true);
-                              } else {
-                                removeSub(idx);
-                              }
-                            }}
-                          >
-                            {row.id ? <Trash2 size={16} /> : <X size={14} />}
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
             </Card>
+          </TabsContent>
 
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={addSub}
-              type="button"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Item
-            </Button>
-          </>
-        )}
+          <TabsContent value="items" className="pt-4">
+            <>
+              <Card className="p-0 overflow-hidden rounded-sm">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[25%]">Item *</TableHead>
+                      <TableHead className="w-[15%]">Qty *</TableHead>
+                      <TableHead className="w-[15%]">Batch </TableHead>
+                      <TableHead className="w-[15%]">Manufacture </TableHead>
+                      <TableHead className="w-[10%]">Expire </TableHead>
+                      <TableHead className="w-[10%]">MRP </TableHead>
+                      <TableHead className="w-[15%]">Selling *</TableHead>
+                      <TableHead className="w-[60px] text-center">
+                        Action
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+
+                  <TableBody>
+                    {formData.subs.map((row, idx) => (
+                      <TableRow key={row.id}>
+                        {/* ITEM */}
+                        <TableCell>
+                          <SelectField
+                            hideLabel
+                            value={row.contractSub_item_id}
+                            onChange={(v) =>
+                              handleSubChange(idx, "contractSub_item_id", v)
+                            }
+                            options={purchaseitemData?.data || []}
+                            optionKey="id"
+                            optionLabel="item_brand_name"
+                            error={errors[`subs.${idx}.contractSub_item_id`]}
+                          />
+                        </TableCell>
+
+                        {/* QTY */}
+                        <TableCell>
+                          <Field
+                            hideLabel
+                            value={row.contractSub_qnty ?? ""}
+                            onChange={(v) =>
+                              handleSubChange(
+                                idx,
+                                "contractSub_qnty",
+                                v.replace(/[^0-9]/g, "")
+                              )
+                            }
+                            error={errors[`subs.${idx}.contractSub_qnty`]}
+                          />
+                          {!isEdit && (
+                            <span className="font-medium text-[11px]">
+                              Available Quantity:{" "}
+                              <span>{availableQuantity[idx] ?? 0}</span>
+                            </span>
+                          )}
+                        </TableCell>
+
+                        <TableCell>
+                          <Field
+                            hideLabel
+                            value={row.contractSub_batch_no ?? ""}
+                            onChange={(v) =>
+                              handleSubChange(idx, "contractSub_batch_no", v)
+                            }
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Field
+                            hideLabel
+                            type="date"
+                            value={row.contractSub_manufacture_date ?? ""}
+                            onChange={(v) =>
+                              handleSubChange(
+                                idx,
+                                "contractSub_manufacture_date",
+                                v
+                              )
+                            }
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Field
+                            hideLabel
+                            type="date"
+                            value={row.contractSub_expire_date ?? ""}
+                            onChange={(v) =>
+                              handleSubChange(idx, "contractSub_expire_date", v)
+                            }
+                          />
+                        </TableCell>
+                        {/* MRP */}
+                        <TableCell>
+                          <Field
+                            hideLabel
+                            value={row.contractSub_mrp ?? ""}
+                            onChange={(v) =>
+                              handleSubChange(
+                                idx,
+                                "contractSub_mrp",
+                                v.replace(/[^0-9.]/g, "")
+                              )
+                            }
+                          />
+                        </TableCell>
+                        {/* MRP */}
+                        <TableCell>
+                          <Field
+                            hideLabel
+                            value={row.contractSub_selling_rate ?? ""}
+                            onChange={(v) =>
+                              handleSubChange(
+                                idx,
+                                "contractSub_selling_rate",
+                                v.replace(/[^0-9.]/g, "")
+                              )
+                            }
+                            error={
+                              errors[`subs.${idx}.contractSub_selling_rate`]
+                            }
+                          />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {formData.subs.length > 1 && (
+                            <Button
+                              size="icon"
+                              variant={row.id ? "destructive" : "secondary"}
+                              onClick={() => {
+                                if (row.id) {
+                                  setSubToDelete({ index: idx, id: row.id });
+                                  setDeleteConfirmOpen(true);
+                                } else {
+                                  removeSub(idx);
+                                }
+                              }}
+                            >
+                              {row.id ? <Trash2 size={16} /> : <X size={14} />}
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Card>
+
+              <Button
+                variant="outline"
+                className="mt-4"
+                onClick={addSub}
+                type="button"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Item
+              </Button>
+            </>
+          </TabsContent>
+        </Tabs>
       </Card>
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent>
