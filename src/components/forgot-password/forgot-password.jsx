@@ -342,13 +342,15 @@ const ForgotPasswordForm = () => {
           style={{ color: colors.mutedForeground }}
         >
           Need help?{" "}
-          <button
-            onClick={() => console.log("Contact support")}
-            className="font-medium hover:underline bg-none border-none p-0 cursor-pointer"
+          <a
+            href="https://ag-solutions.in/contact.php"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium hover:underline cursor-pointer"
             style={{ color: colors.primary }}
           >
             Contact Support
-          </button>
+          </a>
         </p>
       </div>
     </div>

@@ -256,6 +256,8 @@ export const DUTYDRAWBACK_API = {
 };
 export const PAYMENT_API = {
   getlist: "/invoice-payment",
+  getPendinglist: "/getInvoicePaymentPending",
+  getCloselist: "/getInvoicePaymentClose",
   create: "/invoice-payment",
   paymentamount: "/getInvoicePaymentAmount",
   status: "/getInvoicePaymentStatus",

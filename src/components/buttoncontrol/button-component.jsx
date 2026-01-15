@@ -1350,50 +1350,35 @@ export const ProductDescriptionEdit = forwardRef(
 );
 
 ProductDescriptionEdit.page = "Product Description";
-/////// MASTER – Invoice Payment
-export const InvoicePaymentCreate = forwardRef(
-  ({ onClick, className }, ref) => {
-    const userId = useSelector((state) => state.auth.user?.id);
-    const buttonPermissions = useSelector(
-      (state) => state.permissions.buttonPermissions
-    );
-
-    if (
-      !checkPermission(
-        String(userId),
-        "InvoicePaymentCreate",
-        buttonPermissions
-      )
-    ) {
-      return null;
-    }
-
-    return (
-      <Button
-        ref={ref}
-        variant="default"
-        className={className}
-        onClick={onClick}
-      >
-        <SquarePlus className="h-4 w-4 mr-2" />
-        Invoice Payment
-      </Button>
-    );
-  }
-);
-
-InvoicePaymentCreate.page = "Invoice Payment";
-
-/////// MASTER – InvoicePaymentEdit
-export const InvoicePaymentEdit = forwardRef(({ onClick, className }, ref) => {
+/////// MASTER –Payment
+export const PaymentCreate = forwardRef(({ onClick, className }, ref) => {
   const userId = useSelector((state) => state.auth.user?.id);
   const buttonPermissions = useSelector(
     (state) => state.permissions.buttonPermissions
   );
 
-  if (
-    !checkPermission(String(userId), "InvoicePaymentEdit", buttonPermissions)
-  ) {
+  if (!checkPermission(String(userId), "PaymentCreate", buttonPermissions)) {
+    return null;
+  }
+
+  return (
+    <Button ref={ref} variant="default" className={className} onClick={onClick}>
+      <SquarePlus className="h-4 w-4 mr-2" />
+       Payment
+    </Button>
+  );
+});
+
+PaymentCreate.page = "Payment List";
+
+/////// MASTER – PaymentEdit
+export const PaymentEdit = forwardRef(({ onClick, className }, ref) => {
+  const userId = useSelector((state) => state.auth.user?.id);
+  const buttonPermissions = useSelector(
+    (state) => state.permissions.buttonPermissions
+  );
+
+  if (!checkPermission(String(userId), "PaymentEdit", buttonPermissions)) {
     return null;
   }
 
@@ -1410,7 +1395,7 @@ export const InvoicePaymentEdit = forwardRef(({ onClick, className }, ref) => {
   );
 });
 
-InvoicePaymentEdit.page = "Invoice Payment";
+PaymentEdit.page = "Payment List";
 /////// MASTER – DutyDrawbackEdit
 export const DutyDrawbackEdit = forwardRef(({ onClick, className }, ref) => {
   const userId = useSelector((state) => state.auth.user?.id);
@@ -1493,7 +1478,7 @@ export default {
   CartonBoxEdit,
   ProductDescriptionCreate,
   ProductDescriptionEdit,
-  InvoicePaymentCreate,
-  InvoicePaymentEdit,
+  PaymentCreate,
+  PaymentEdit,
   DutyDrawbackEdit,
 };

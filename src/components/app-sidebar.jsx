@@ -165,9 +165,26 @@ const NAVIGATION_CONFIG = [
     icon: Users,
   },
   {
-    title: "Invoice Payment",
-    url: "/invoice-payment",
-    icon: Users,
+    title: "Payment",
+    url: "#",
+    icon: Settings,
+    items: [
+      {
+        title: "Payment List",
+        url: "/payment",
+        icon: Users,
+      },
+      {
+        title: "Payment Pending",
+        url: "/pending-payment",
+        icon: Users,
+      },
+      {
+        title: "Payment Close",
+        url: "/close-payment",
+        icon: Users,
+      },
+    ],
   },
   {
     title: "Report",

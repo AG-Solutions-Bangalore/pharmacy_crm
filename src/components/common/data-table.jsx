@@ -23,6 +23,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
+  ArrowUpDown,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -41,6 +42,7 @@ const DataTable = ({
   serverPagination,
 }) => {
   const isServer = !!serverPagination;
+  const [sorting, setSorting] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [expandedRows, setExpandedRows] = useState({});
   const [globalFilter, setGlobalFilter] = useState("");
@@ -53,6 +55,7 @@ const DataTable = ({
     data,
     columns,
     state: {
+      sorting,
       globalFilter,
       pagination: isServer
         ? {
@@ -76,6 +79,7 @@ const DataTable = ({
           serverPagination.onPageChange(next.pageIndex);
         }
       : setPagination,
+    onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -124,7 +128,7 @@ const DataTable = ({
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" >
+              <Button variant="outline">
                 Columns <ChevronDown className="ml-2 h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
@@ -163,12 +167,48 @@ const DataTable = ({
             {table.getHeaderGroups().map((hg) => (
               <TableRow key={hg.id}>
                 {expandableRow && <TableHead className="w-10" />}
-                {hg.headers.map((header) => (
+                {/* {hg.headers.map((header) => (
                   <TableHead key={header.id}>
                     {flexRender(
                       header.column.columnDef.header,
                       header.getContext()
                     )}
+                  </TableHead>
+                ))} */}
+                {hg.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    onClick={
+                      header.column.getCanSort()
+                        ? header.column.getToggleSortingHandler()
+                        : undefined
+                    }
+                    className={
+                      header.column.getCanSort()
+                        ? "cursor-pointer select-none"
+                        : ""
+                    }
+                  >
+                    <div className="flex items-center gap-1">
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+
+                      {header.column.getCanSort() && (
+                        <>
+                          {/* {header.column.getIsSorted() === "asc" && (
+                            <ChevronUp className="h-3 w-3" />
+                          )}
+                          {header.column.getIsSorted() === "desc" && (
+                            <ChevronDown className="h-3 w-3" />
+                          )}
+                          {!header.column.getIsSorted() && ( */}
+                            <ArrowUpDown className="h-3 w-3 opacity-40" />
+                          {/* // )} */}
+                        </>
+                      )}
+                    </div>
                   </TableHead>
                 ))}
               </TableRow>
